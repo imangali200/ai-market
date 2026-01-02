@@ -55,7 +55,7 @@ export default defineNuxtConfig({
       title: 'Ai-Market - Карго тасымалдау және тауарларды бақылау',
       meta: [
         { name: 'description', content: 'Ai-Market - Қытайдан Қазақстанға тауарларды жылдам әрі сенімді жеткізу. Трэк-номер арқылы тауарларды бақылау жүйесі.' },
-        { name: 'keywords', content: 'карго, Қытайдан жеткізу, тауар бақылау, Ai-Market, логистика' },
+        { name: 'keywords', content: 'aimarket,aimar,ai,Aimarket,ai-market,cargo,market,aicargo,Aicargo,карго, Қытайдан жеткізу, тауар бақылау, Ai-Market, логистика' },
         // Open Graph / Facebook
         { property: 'og:type', content: 'website' },
         { property: 'og:url', content: 'https://ai-market.kz/' },
