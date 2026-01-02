@@ -52,7 +52,7 @@ export default defineNuxtConfig({
   // iOS Safari үшін қосымша meta tags
   app: {
     head: {
-      title: 'Ai-Market - Карго тасымалдау және тауарларды бақылау',
+      title: 'Ai-Market',
       meta: [
         { name: 'description', content: 'Ai-Market - Қытайдан Қазақстанға тауарларды жылдам әрі сенімді жеткізу. Трэк-номер арқылы тауарларды бақылау жүйесі.' },
         { name: 'keywords', content: 'aimarket,aimar,ai,Aimarket,ai-market,cargo,market,aicargo,Aicargo,карго, Қытайдан жеткізу, тауар бақылау, Ai-Market, логистика' },
@@ -68,6 +68,7 @@ export default defineNuxtConfig({
         { name: 'twitter:title', content: 'Ai-Market - Карго тасымалдау' },
         { name: 'twitter:description', content: 'Тауарларыңызды бізбен бірге бақылаңыз.' },
         { name: 'twitter:image', content: 'https://ai-market.kz/images/ai-market-logo.jpg' },
+        { name: 'google-site-verification', content: 'google1ccc272df3e5873a' },
 
         { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
@@ -88,7 +89,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://ai-cargo.onrender.com/'
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || ''
     }
   }
 });
