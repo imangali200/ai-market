@@ -52,7 +52,23 @@ export default defineNuxtConfig({
   // iOS Safari үшін қосымша meta tags
   app: {
     head: {
+      title: 'Ai-Market - Карго тасымалдау және тауарларды бақылау',
       meta: [
+        { name: 'description', content: 'Ai-Market - Қытайдан Қазақстанға тауарларды жылдам әрі сенімді жеткізу. Трэк-номер арқылы тауарларды бақылау жүйесі.' },
+        { name: 'keywords', content: 'карго, Қытайдан жеткізу, тауар бақылау, Ai-Market, логистика' },
+        // Open Graph / Facebook
+        { property: 'og:type', content: 'website' },
+        { property: 'og:url', content: 'https://ai-market.kz/' },
+        { property: 'og:title', content: 'Ai-Market - Карго тасымалдау' },
+        { property: 'og:description', content: 'Тауарларыңызды бізбен бірге бақылаңыз. Қытайдан Қазақстанға тиімді жеткізу.' },
+        { property: 'og:image', content: 'https://ai-market.kz/images/ai-market-logo.jpg' },
+        // Twitter
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:url', content: 'https://ai-market.kz/' },
+        { name: 'twitter:title', content: 'Ai-Market - Карго тасымалдау' },
+        { name: 'twitter:description', content: 'Тауарларыңызды бізбен бірге бақылаңыз.' },
+        { name: 'twitter:image', content: 'https://ai-market.kz/images/ai-market-logo.jpg' },
+
         { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
