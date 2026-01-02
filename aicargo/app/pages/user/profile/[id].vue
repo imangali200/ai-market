@@ -1,0 +1,187 @@
+<script setup lang="ts">
+definePageMeta({
+    layout: 'default',
+    middleware: ['auth', 'user-active']
+})
+
+interface Post {
+    id: number
+    link: string
+    review: string
+    likesCount: number
+    createAt: string
+}
+
+interface Profile {
+    id: number
+    name: string
+    surname: string
+    posts: Post[]
+}
+
+const { $axios } = useNuxtApp()
+const token = useCookie('token')
+const route = useRoute()
+const router = useRouter()
+
+const profile = ref<Profile | null>(null)
+const loading = ref(false)
+
+const userId = computed(() => route.params.id as string)
+
+async function getUserProfile() {
+    loading.value = true
+    try {
+        const response = await $axios.get(`profile/${userId.value}`, {
+            headers: { 'Authorization': `Bearer ${token.value}` }
+        })
+        profile.value = response.data
+    } catch (error: any) {
+        console.error('Profile error:', error.response?.data || error)
+    } finally {
+        loading.value = false
+    }
+}
+
+function formatDate(date: string) {
+    return new Date(date).toLocaleDateString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    })
+}
+
+function goBack() {
+    router.back()
+}
+
+const posts = computed(() => profile.value?.posts || [])
+
+watch(userId, (newId) => {
+    if (newId) {
+        getUserProfile()
+    }
+}, { immediate: true })
+</script>
+
+<template>
+    <div class="profile-page">
+        <!-- Loading -->
+        <div v-if="loading" class="loading">
+            <div class="spinner"></div>
+        </div>
+
+        <div v-else-if="profile" class="profile-content">
+            
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-left">
+                    <h1 class="profile-name">{{ profile.name }}</h1>
+                    <p class="profile-username">{{ profile.name?.toLowerCase() }}_{{ profile.surname?.toLowerCase() }}</p>
+                </div>
+                <div class="profile-avatar">
+                    {{ profile.name?.charAt(0).toUpperCase() || 'U' }}
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="profile-stats">
+                <span class="stat">{{ posts.length }} постов</span>
+            </div>
+
+            <!-- Action Button -->
+            <button @click="goBack" class="back-button">← Назад</button>
+
+            <!-- Tabs -->
+            <div class="profile-tabs">
+                <button class="tab active">Посты</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <div v-if="!posts.length" class="empty-state">
+                    <p>Нет постов</p>
+                </div>
+                <div v-else class="posts-list">
+                    <div v-for="post in posts" :key="post.id" class="post-item">
+                        <div class="post-avatar">{{ profile.name?.charAt(0).toUpperCase() }}</div>
+                        <div class="post-content">
+                            <div class="post-header">
+                                <span class="post-author">{{ profile.name }}</span>
+                                <span class="post-time">{{ formatDate(post.createAt) }}</span>
+                            </div>
+                            <p class="post-text">{{ post.review }}</p>
+                            <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link" target="_blank" class="post-link">
+                                🔗 {{ post.link }}
+                            </a>
+                            <div class="post-actions">
+                                <span class="post-action">❤️ {{ post.likesCount }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error -->
+        <div v-else class="empty-state">
+            <span class="empty-icon">😕</span>
+            <h3>Профиль не найден</h3>
+            <button @click="goBack" class="btn">← Назад</button>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.profile-page { padding: 8px 0; }
+
+.loading { display: flex; justify-content: center; padding: 60px 0; }
+.spinner { width: 24px; height: 24px; border: 2px solid #333; border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.profile-content { }
+
+/* Header */
+.profile-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.profile-left { flex: 1; }
+.profile-name { font-size: 26px; font-weight: 700; color: #fff; margin: 0 0 2px; }
+.profile-username { font-size: 15px; color: #777; margin: 0; }
+
+.profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 600; color: #fff; flex-shrink: 0; }
+
+/* Stats */
+.profile-stats { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
+.stat { font-size: 15px; color: #888; }
+
+/* Back Button */
+.back-button { width: 100%; padding: 14px; background: transparent; border: 1px solid #333; border-radius: 12px; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-bottom: 24px; }
+.back-button:hover { background: #111; }
+
+/* Tabs */
+.profile-tabs { display: flex; border-bottom: 1px solid #222; margin-bottom: 0; }
+.tab { flex: 1; padding: 16px 0; background: transparent; border: none; border-bottom: 1px solid transparent; color: #666; font-size: 15px; font-weight: 600; cursor: pointer; }
+.tab.active { color: #fff; border-bottom-color: #fff; }
+
+/* Tab Content */
+.tab-content { min-height: 200px; }
+
+.empty-state { text-align: center; padding: 60px 20px; }
+.empty-icon { font-size: 48px; display: block; margin-bottom: 16px; }
+.empty-state h3 { font-size: 18px; font-weight: 600; color: #fff; margin: 0 0 8px; }
+.empty-state p { font-size: 15px; color: #555; margin: 0; }
+.btn { padding: 12px 24px; background: #fff; border: none; border-radius: 20px; color: #000; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 16px; }
+
+/* Posts List */
+.posts-list { }
+.post-item { display: flex; gap: 12px; padding: 16px 0; border-bottom: 1px solid #222; }
+.post-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: #fff; flex-shrink: 0; }
+.post-content { flex: 1; }
+.post-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.post-author { font-size: 15px; font-weight: 600; color: #fff; }
+.post-time { font-size: 14px; color: #555; }
+.post-text { font-size: 15px; color: #fff; line-height: 1.4; margin: 0 0 8px; }
+.post-link { display: inline-block; font-size: 14px; color: #1d9bf0; text-decoration: none; margin-bottom: 12px; }
+.post-link:hover { text-decoration: underline; }
+.post-actions { display: flex; gap: 20px; margin-top: 8px; }
+.post-action { font-size: 14px; color: #f91880; }
+</style>
