@@ -17,7 +17,7 @@ export const AppDataSource = new DataSource({
   entities: [join(__dirname, '/**/*.entity{.ts,.js}')],
   migrations: [join(__dirname, '/migrations/*{.ts,.js}')],
   synchronize: false,
-  ssl: {
+  ssl: configService.get<string>('DATABASE_SSL') === 'true' ? {
     rejectUnauthorized: false,
-  },
+  } : false,
 });
