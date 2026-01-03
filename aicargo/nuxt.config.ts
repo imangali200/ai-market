@@ -80,11 +80,27 @@ export default defineNuxtConfig({
         { name: 'format-detection', content: 'telephone=no' }
       ],
       link: [
+        { rel: 'icon', type: 'image/jpeg', href: '/images/ai-market-logo.jpg' },
         { rel: 'apple-touch-icon', href: '/images/ai-market-logo.jpg' },
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/images/ai-market-logo.jpg' },
         { rel: 'apple-touch-icon', sizes: '167x167', href: '/images/ai-market-logo.jpg' },
         { rel: 'apple-touch-icon', sizes: '152x152', href: '/images/ai-market-logo.jpg' },
         { rel: 'manifest', href: '/manifest.webmanifest' }
+      ],
+      script: [
+        {
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Ai-Market",
+            "url": "https://ai-market.kz",
+            "logo": "https://ai-market.kz/images/ai-market-logo.jpg",
+            "sameAs": [
+              "https://ai-market.kz"
+            ]
+          })
+        }
       ]
     }
   },
