@@ -32,7 +32,7 @@ export class UserController {
   @ApiOperation({ summary: 'search with (name,phonenumber,surname,role)' })
   @Get(':search')
   @Auth([UserRoles.ADMIN, UserRoles.SUPERADMIN])
-  async searchUsers(@Query('search') search: number) {
+  async searchUsers(@Query('search') search: string) {
     return await this.userService.searchUsers(search);
   }
 

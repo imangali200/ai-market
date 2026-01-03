@@ -85,18 +85,24 @@ export class UserService {
     }
   }
 
-  async searchUsers(search: number) {
+  async searchUsers(search: string) {
     try {
-      const users = await this.userRepository
+      const query = this.userRepository
         .createQueryBuilder('user')
         .where('user.name ILIKE :search', { search: `%${search}%` })
         .orWhere('CAST(user.role AS TEXT) ILIKE :search', {
           search: `%${search}%`,
         })
         .orWhere('user.surname ILIKE :search', { search: `%${search}%` })
-        .orWhere('user.phoneNumber ILIKE :search', { search: `%${search}%` })
-        .orWhere('user.id = :id', { id: search })
-        .getMany();
+        .orWhere('user.phoneNumber ILIKE :search', { search: `%${search}%` });
+
+      const isNumeric = /^\d+$/.test(search);
+      if (isNumeric && search.length < 10) {
+        query.orWhere('user.id = :id', { id: parseInt(search) });
+      }
+
+      const users = await query.getMany();
+
       if (!users || users.length === 0)
         throw new NotFoundException('user is not found');
       return users;

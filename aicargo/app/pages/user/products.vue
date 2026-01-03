@@ -269,7 +269,7 @@ onMounted(async () => {
                 </div>
                 <div class="card-desc">
                     <span class="desc-label">Описание</span>
-                    <p class="desc-text">{{ product.description || 'Не указано' }}</p>
+                    <p class="desc-text">{{ product.productName || 'Не указано' }}</p>
                 </div>
                 <div class="card-timeline">
                     <div v-for="step in getSteps(product)" :key="step.step" class="timeline-row">
