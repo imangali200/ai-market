@@ -4,6 +4,7 @@ definePageMeta({
 })
 
 import { useToast } from '~/composables/useToast'
+import { watch } from 'vue'
 
 interface Product {
     id: number
@@ -34,6 +35,7 @@ const loading = ref(true)
 const searchQuery = ref('')
 const isSearchMode = ref(false)
 const activeTab = ref<'active' | 'archive'>('active')
+const archiveProducts = ref<Product[]>([])
 const isLoggedIn = computed(() => !!token.value)
 
 const showAddModal = ref(false)
@@ -41,8 +43,8 @@ const newTrackCode = ref('')
 const newDescription = ref('')
 const addLoading = ref(false)
 
-const activeProducts = computed(() => allProducts.value.filter(p => !p.aicargo))
-const archivedProducts = computed(() => allProducts.value.filter(p => p.aicargo))
+const activeProducts = computed(() => allProducts.value)
+const archivedProducts = computed(() => archiveProducts.value)
 const products = computed(() => activeTab.value === 'active' ? activeProducts.value : archivedProducts.value)
 
 const whatsappLink = computed(() => {
@@ -73,6 +75,26 @@ async function getProducts() {
         allProducts.value = []
     }
 }
+
+async function getArchiveProducts() {
+    if (!token.value) return
+    try {
+        const response = await $axios.get('products/archive', {
+            headers: { 'Authorization': `Bearer ${token.value}` }
+        })
+        archiveProducts.value = response.data
+    } catch {
+        archiveProducts.value = []
+    }
+}
+
+watch(activeTab, (newTab) => {
+    if (newTab === 'archive') {
+        getArchiveProducts()
+    } else {
+        getProducts()
+    }
+})
 
 async function addTrack() {
     if (!newTrackCode.value.trim() || !newDescription.value.trim()) return
@@ -126,7 +148,11 @@ async function deleteTrack(e: Event, productId: string) {
             headers: { 'Authorization': `Bearer ${token.value}` }
         })
         toast.success('Удалено', { position: 'top-center' })
-        await getProducts()
+        if (activeTab.value === 'archive') {
+            await getArchiveProducts()
+        } else {
+            await getProducts()
+        }
     } catch {
         toast.error('Ошибка', { position: 'top-center' })
     }

@@ -92,8 +92,7 @@ export class BranchService {
         .withDeleted()
         .where('branches.deleteAt IS NOT NULL')
         .getMany();
-      if (!datas || datas.length === 0)
-        throw new NotFoundException('there is no have datas');
+
       return datas;
     } catch (error) {
       throw error;

@@ -48,19 +48,19 @@ export class ProductsService {
     }
   }
 
-  async restoreProduct(productId: string, id: string) {
+  async restoreProduct(productId: string, userId: number) {
     try {
       const product = await this.productRepository
         .createQueryBuilder('products')
         .withDeleted()
         .leftJoin('products.user', 'user')
-        .where('products.productId = :productId',{productId})
-        .andWhere('user.id = :id', { id })
+        .where('products.productId = :productId', { productId })
+        .andWhere('user.id = :userId', { userId })
         .getOne();
 
-      if (!product) throw new NotFoundException('Empty product');
-      await this.productRepository.restore(product.id)
-      return {message:'Product is restored'}
+      if (!product) throw new NotFoundException('Product not found in archive');
+      await this.productRepository.restore(product.id);
+      return { message: 'Product is restored' };
     } catch (error) {
       throw error;
     }
@@ -79,16 +79,16 @@ export class ProductsService {
     }
   }
 
-  async getArchives(id: string) {
+  async getArchives(userId: number) {
     try {
       const products = await this.productRepository
         .createQueryBuilder('products')
         .withDeleted()
         .leftJoin('products.user', 'user')
-        .where('user.id = :id', { id })
+        .where('user.id = :userId', { userId })
         .andWhere('products.deleteAt IS NOT NULL')
         .getMany();
-      if (!products) throw new NotFoundException('In archive no have products');
+
       return products;
     } catch (error) {
       throw error;
