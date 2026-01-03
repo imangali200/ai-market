@@ -185,9 +185,7 @@ function formatDate(date: string | null) {
     })
 }
 
-function viewTrack(productId: string) {
-    router.push('/user/track/' + productId)
-}
+
 
 function clearSearch() {
     searchQuery.value = ''
@@ -293,7 +291,7 @@ onMounted(async () => {
         </div>
 
         <div v-else class="products-list">
-            <div v-for="product in products" :key="product.id" class="product-card" @click="viewTrack(product.productId)">
+            <div v-for="product in products" :key="product.id" class="product-card">
                 <div class="card-header" :class="{ archived: activeTab === 'archive' }">
                     <div class="card-header-info">
                         <span class="card-label">Трек-код</span>
@@ -405,8 +403,7 @@ onMounted(async () => {
 
 .products-list { display: flex; flex-direction: column; gap: 28px; }
 
-.product-card { background: #000; border-radius: 20px; overflow: hidden; cursor: pointer; transition: transform 0.2s; }
-.product-card:hover { transform: scale(1.01); }
+.product-card { background: #000; border-radius: 20px; overflow: hidden; }
 
 .card-header { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 16px 20px; display: flex; justify-content: space-between; align-items: flex-start; }
 .card-header.archived { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
