@@ -38,7 +38,8 @@ export default defineNuxtConfig({
     },
     workbox: {
       navigateFallback: '/',
-      globPatterns: ['**/*.{js,css,html,png,svg,ico}']
+      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+      globIgnores: ['google1ccc272df3e5873a.html']
     },
     client: {
       installPrompt: false
