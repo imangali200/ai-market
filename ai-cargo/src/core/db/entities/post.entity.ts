@@ -29,8 +29,9 @@ export class PostEntity{
     @JoinTable()
     likes:UserEntity[]
 
-    @OneToMany(()=>UserEntity,(user)=>user.saved)
-    savedBy:UserEntity[]
+    @ManyToMany(() => UserEntity, (user) => user.saved)
+    @JoinTable()
+    savedBy: UserEntity[];
 
 
     @CreateDateColumn({type:"timestamp"})

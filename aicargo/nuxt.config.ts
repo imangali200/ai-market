@@ -1,4 +1,4 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+
 export default defineNuxtConfig({
   modules: ["@nuxtjs/tailwindcss", "@vite-pwa/nuxt"],
   compatibilityDate: "2025-07-15",
@@ -7,7 +7,7 @@ export default defineNuxtConfig({
     '~/plugins/toast.client.ts'
   ],
 
-  // PWA конфигурациясы - Safari UI жасыру үшін
+
   pwa: {
     registerType: 'autoUpdate',
     manifest: {
@@ -49,20 +49,20 @@ export default defineNuxtConfig({
     }
   },
 
-  // iOS Safari үшін қосымша meta tags
+
   app: {
     head: {
       title: 'Ai-Market',
       meta: [
         { name: 'description', content: 'Ai-Market - Қытайдан Қазақстанға тауарларды жылдам әрі сенімді жеткізу. Трэк-номер арқылы тауарларды бақылау жүйесі.' },
-        { name: 'keywords', content: 'aimarket,aimar,ai,Aimarket,ai-market,cargo,market,aicargo,Aicargo,карго, Қытайдан жеткізу, тауар бақылау, Ai-Market, логистика' },
-        // Open Graph / Facebook
+        { name: 'keywords', content: 'aimarket,аймаркет,aimar,ai,Aimarket,ai-market,cargo,market,aicargo,Aicargo,карго, Қытайдан жеткізу, тауар бақылау, Ai-Market, логистика' },
+
         { property: 'og:type', content: 'website' },
         { property: 'og:url', content: 'https://ai-market.kz/' },
         { property: 'og:title', content: 'Ai-Market - Карго тасымалдау' },
         { property: 'og:description', content: 'Тауарларыңызды бізбен бірге бақылаңыз. Қытайдан Қазақстанға тиімді жеткізу.' },
         { property: 'og:image', content: 'https://ai-market.kz/images/ai-market-logo.jpg' },
-        // Twitter
+ 
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:url', content: 'https://ai-market.kz/' },
         { name: 'twitter:title', content: 'Ai-Market - Карго тасымалдау' },

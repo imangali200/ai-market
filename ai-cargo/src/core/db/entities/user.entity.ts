@@ -47,9 +47,8 @@ export class UserEntity {
   @ManyToMany(()=>PostEntity,(post)=>post.likes)
   postLikes:PostEntity[]
 
-  @ManyToOne(()=>PostEntity,(post)=>post.savedBy)
-  @JoinTable()
-  saved:PostEntity[]
+  @ManyToMany(() => PostEntity, (post) => post.savedBy)
+  saved: PostEntity[];
 
   @CreateDateColumn({type:'timestamp',default:()=>'CURRENT_TIMESTAMP'})
   createAt:Date
