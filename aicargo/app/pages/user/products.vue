@@ -141,20 +141,35 @@ async function searchTrack() {
 
 async function deleteTrack(e: Event, productId: string) {
     e.stopPropagation()
-    if (!confirm('Удалить: ' + productId + '?')) return
+    const isArchive = activeTab.value === 'archive'
+    const message = isArchive ? 'Удалить навсегда: ' : 'Удалить: '
+    if (!confirm(message + productId + '?')) return
     
     try {
         await $axios.delete('products/' + productId, {
             headers: { 'Authorization': `Bearer ${token.value}` }
         })
-        toast.success('Удалено', { position: 'top-center' })
-        if (activeTab.value === 'archive') {
+        toast.success(isArchive ? 'Удалено навсегда' : 'Удалено в архив', { position: 'top-center' })
+        if (isArchive) {
             await getArchiveProducts()
         } else {
             await getProducts()
         }
     } catch {
         toast.error('Ошибка', { position: 'top-center' })
+    }
+}
+
+async function restoreTrack(e: Event, productId: string) {
+    e.stopPropagation()
+    try {
+        await $axios.post(`products/${productId}/restore`, {}, {
+            headers: { 'Authorization': `Bearer ${token.value}` }
+        })
+        toast.success('Восстановлено!', { position: 'top-center' })
+        await getArchiveProducts()
+    } catch {
+        toast.error('Ошибка при восстановлении', { position: 'top-center' })
     }
 }
 
@@ -284,9 +299,14 @@ onMounted(async () => {
                         <span class="card-label">Трек-код</span>
                         <h2 class="card-code">{{ product.productId.toUpperCase() }}</h2>
                     </div>
-                    <button @click="deleteTrack($event, product.productId)" class="card-delete">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
-                    </button>
+                    <div class="card-actions">
+                        <button v-if="activeTab === 'archive'" @click="restoreTrack($event, product.productId)" class="card-restore" title="Восстановить">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        </button>
+                        <button @click="deleteTrack($event, product.productId)" class="card-delete" :title="activeTab === 'archive' ? 'Удалить навсегда' : 'Удалить в архив'">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="card-progress" :class="{ archived: activeTab === 'archive' }">
                     <div class="progress-bar">
@@ -393,8 +413,10 @@ onMounted(async () => {
 .card-header-info { display: flex; flex-direction: column; gap: 2px; }
 .card-label { font-size: 12px; color: rgba(255,255,255,0.7); }
 .card-code { font-size: 22px; font-weight: 800; color: #fff; margin: 0; letter-spacing: 1px; }
-.card-delete { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border: none; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; }
-.card-delete:hover { background: rgba(255,255,255,0.3); }
+.card-actions { display: flex; gap: 8px; align-items: flex-start; }
+.card-restore, .card-delete { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border: none; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; transition: background 0.2s; }
+.card-restore:hover { background: rgba(255,255,255,0.4); }
+.card-delete:hover { background: rgba(244,63,94,0.4); }
 .card-progress { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 0 20px 16px; }
 .card-progress.archived { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
 .progress-bar { height: 5px; background: rgba(255,255,255,0.3); border-radius: 3px; overflow: hidden; }

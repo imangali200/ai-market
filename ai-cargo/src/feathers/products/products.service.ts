@@ -124,11 +124,20 @@ export class ProductsService {
     try {
       const product = await this.productRepository.findOne({
         where: { productId, user: { id: userId } },
+        withDeleted: true
       });
+
       if (!product) throw new NotFoundException('Product not found');
-      const productSave = await this.productRepository.softDelete(product.id);
-  
-      return { message: 'Deleted successfully' };
+
+      if (product.deleteAt) {
+        // Егер тауар бұрын "архивке" кеткен болса, оны базадан мүлдем өшіреміз
+        await this.productRepository.delete(product.id);
+        return { message: 'Permanently deleted' };
+      } else {
+        // Егер тауар активті болса, оны архивке (soft delete) жібереміз
+        await this.productRepository.softDelete(product.id);
+        return { message: 'Moved to archive' };
+      }
     } catch (error) {
       throw error;
     }
