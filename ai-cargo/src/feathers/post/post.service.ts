@@ -25,12 +25,21 @@ export class PostService {
 
     private configService: ConfigService
   ) {
-    cloudinary.config({
-      cloud_name: this.configService.get('CLOUDINARY_CLOUD_NAME'),
-      api_key: this.configService.get('CLOUDINARY_API_KEY'),
-      api_secret: this.configService.get('CLOUDINARY_API_SECRET'),
+    const cloudName = this.configService.get('CLOUDINARY_CLOUD_NAME');
+    const apiKey = this.configService.get('CLOUDINARY_API_KEY');
+    const apiSecret = this.configService.get('CLOUDINARY_API_SECRET');
+
+    console.log('Initializing Cloudinary with:', {
+      cloudName: cloudName ? 'Defined' : 'UNDEFINED',
+      apiKey: apiKey ? 'Defined' : 'UNDEFINED',
+      apiSecret: apiSecret ? 'Defined' : 'UNDEFINED',
     });
 
+    cloudinary.config({
+      cloud_name: cloudName,
+      api_key: apiKey,
+      api_secret: apiSecret,
+    });
   }
 
   async createPost(postDto: PostDto,photo:Express.Multer.File, id: number) {
@@ -49,8 +58,12 @@ export class PostService {
         const uploadStream = this.cloudinary.uploader.upload_stream(
           { folder: 'posts' },
           (error, result) => {
-            if (result) resolve(result.secure_url);
-            else reject(error);
+            if (error) {
+              console.error('Cloudinary upload error details:', JSON.stringify(error, null, 2));
+              reject(error);
+            } else if (result) {
+              resolve(result.secure_url);
+            }
           }
         );
         streamifier.createReadStream(photo.buffer).pipe(uploadStream);

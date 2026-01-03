@@ -10,7 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "2": "^3.0.0",
+
     "axios": "^1.13.1",
     "imask": "^7.6.1",
     "jwt-decode": "^4.0.0",
