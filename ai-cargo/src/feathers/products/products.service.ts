@@ -95,6 +95,18 @@ export class ProductsService {
     }
   }
 
+  async getProductByCode(productId: string, userId: number) {
+    try {
+      const product = await this.productRepository.findOne({
+        where: { productId, user: { id: userId } }
+      });
+      if (!product) throw new NotFoundException('Product not found');
+      return product;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async searchProducts(id: string) {
     try {
       const product = await this.productRepository

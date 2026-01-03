@@ -29,7 +29,7 @@ const loading = ref(false)
 async function getProduct() {
     loading.value = true
     try {
-        const response = await $axios.get(`products/${productId}`, {
+        const response = await $axios.get(`products/track/${productId}`, {
             headers: { 'Authorization': `Bearer ${token.value}` }
         })
         product.value = response.data

@@ -129,7 +129,7 @@ async function searchTrack() {
         const response = await $axios.get('products/' + searchQuery.value.trim(), {
             headers: { 'Authorization': `Bearer ${token.value}` }
         })
-        allProducts.value = response.data ? [response.data] : []
+        allProducts.value = response.data || []
         isSearchMode.value = true
     } catch {
         allProducts.value = []

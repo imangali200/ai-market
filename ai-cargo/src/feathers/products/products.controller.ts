@@ -41,6 +41,14 @@ export class ProductsController {
     return await this.productsService.getArchives(userId)
   }
 
+  @ApiOperation({summary:'get product by track code'})
+  @Get('track/:productId')
+  @Auth()
+  async getTrackByCode(@Param('productId') productId:string, @Req() req:any){
+    const userId = req.user.id
+    return await this.productsService.getProductByCode(productId, userId)
+  }
+
   @ApiOperation({summary:'search products'})
   @Get(':productId')
   async searchByAdmin(@Param('productId') productId:string){
