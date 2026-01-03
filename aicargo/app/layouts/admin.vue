@@ -13,7 +13,7 @@
                 <nav class="admin-nav desktop-nav">
                     <router-link to="/superAdmin" class="nav-link">Главная</router-link>
                     <router-link to="/superAdmin/users" class="nav-link">Пользователи</router-link>
-                    <router-link to="/superAdmin/tracks" class="nav-link">Треки</router-link>
+                    <router-link to="/superAdmin/history" class="nav-link">История</router-link>
                     <router-link to="/superAdmin/warehouses" class="nav-link">Склады</router-link>
                 </nav>
                 
