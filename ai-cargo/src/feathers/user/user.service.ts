@@ -237,6 +237,7 @@ export class UserService {
           id: true,
           name: true,
           surname: true,
+          code: true,
           posts: {
             id: true,
             review: true,
@@ -246,7 +247,8 @@ export class UserService {
             author: {
               id: true,
               name: true,
-              surname: true
+              surname: true,
+      
             },
             comments: {
               id: true,
@@ -255,7 +257,8 @@ export class UserService {
               author: {
                 id: true,
                 name: true,
-                surname: true
+                surname: true,
+          
               }
             }
           }
@@ -291,19 +294,20 @@ export class UserService {
           name: true,
           surname: true,
           phoneNumber: true,
+          code: true,
           role: true,
           isActive: true,
           posts: {
             id: true, review: true, imgUrl: true, link: true, createAt: true,
-            author: { id: true, name: true, surname: true }
+            author: { id: true, name: true, surname: true, code: true }
           },
           postLikes: {
             id: true, review: true, imgUrl: true, link: true, createAt: true,
-            author: { id: true, name: true, surname: true }
+            author: { id: true, name: true, surname: true, code: true }
           },
           saved: {
             id: true, review: true, imgUrl: true, link: true, createAt: true,
-            author: { id: true, name: true, surname: true }
+            author: { id: true, name: true, surname: true, code: true }
           }
         }
       });
