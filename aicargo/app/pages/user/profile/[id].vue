@@ -222,8 +222,6 @@ watch(userId, (newId) => {
             <button @click="goBack" class="btn">← Назад</button>
         </div>
     </div>
-        </div>
-    </div>
 
     <!-- Comments Panel -->
     <Teleport to="body">
