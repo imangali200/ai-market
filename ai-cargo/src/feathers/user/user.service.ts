@@ -227,7 +227,7 @@ export class UserService {
     try {
       const profile = await this.userRepository.findOne({
         where: { id },
-        relations: ['posts'],
+        relations: ['posts', 'posts.comments', 'posts.comments.author'],
         select: {
           id: true,
           name: true,
@@ -245,7 +245,11 @@ export class UserService {
     try {
       const profile = await this.userRepository.findOne({
         where: { id },
-        relations: ['postLikes', 'saved', 'posts'],
+        relations: [
+          'postLikes', 'postLikes.comments', 'postLikes.comments.author',
+          'saved', 'saved.comments', 'saved.comments.author',
+          'posts', 'posts.comments', 'posts.comments.author'
+        ],
       });
       if (!profile) throw new NotFoundException('not found this user');
       delete profile.password;
