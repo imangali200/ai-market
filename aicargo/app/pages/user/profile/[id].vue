@@ -8,6 +8,7 @@ interface Post {
     id: number
     link: string
     review: string
+    imgUrl: string | null
     likesCount: number
     createAt: string
 }
@@ -110,6 +111,9 @@ watch(userId, (newId) => {
                                 <span class="post-author">{{ profile.name }}</span>
                                 <span class="post-time">{{ formatDate(post.createAt) }}</span>
                             </div>
+                            <div v-if="post.imgUrl" class="post-image-wrapper">
+                                <img :src="post.imgUrl" :alt="post.review" class="post-image" loading="lazy">
+                            </div>
                             <p class="post-text">{{ post.review }}</p>
                             <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link" target="_blank" class="post-link">
                                 🔗 {{ post.link }}
@@ -182,6 +186,9 @@ watch(userId, (newId) => {
 .post-text { font-size: 15px; color: #fff; line-height: 1.4; margin: 0 0 8px; }
 .post-link { display: inline-block; font-size: 14px; color: #1d9bf0; text-decoration: none; margin-bottom: 12px; }
 .post-link:hover { text-decoration: underline; }
+.post-image-wrapper { margin: 8px 0 12px; height: 280px; background: #111; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px; border: 1px solid #222; }
+.post-image { width: 100%; height: 100%; object-fit: cover; }
+
 .post-actions { display: flex; gap: 20px; margin-top: 8px; }
 .post-action { font-size: 14px; color: #f91880; }
 </style>

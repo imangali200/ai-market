@@ -9,6 +9,7 @@ interface Post {
     id: number
     link: string
     review: string
+    imgUrl: string | null
     likesCount: number
     createAt: string
 }
@@ -25,7 +26,7 @@ interface Profile {
     createAt: string
     posts: Post[]
     postLikes: Post[]
-    saved: Post | null
+    saved: Post[]
 }
 
 const WHATSAPP_NUMBER = "77083791496" // Замените на реальный номер
@@ -128,7 +129,7 @@ async function unsavePost(postId: number) {
         toast.success('Сақталғаннан алынды', { position: 'top-center' })
         // Remove from local state
         if (profile.value) {
-            profile.value.saved = null
+            profile.value.saved = profile.value.saved.filter(p => p.id !== postId)
         }
     } catch (error: any) {
         console.error('Unsave error:', error)
@@ -213,11 +214,20 @@ onMounted(() => {
                     <button class="delete-btn" @click="deletePost(post.id)" title="Удалить">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                     </button>
+                    <div class="post-header-info">
+                        <div class="post-avatar">{{ profile.name?.charAt(0).toUpperCase() || 'U' }}</div>
+                        <div class="post-meta-info">
+                            <span class="post-author">{{ profile.name }}</span>
+                            <span class="post-time">{{ formatDate(post.createAt) }}</span>
+                        </div>
+                    </div>
+                    <div v-if="post.imgUrl" class="post-image-wrapper">
+                        <img :src="post.imgUrl" :alt="post.review" class="post-image" loading="lazy">
+                    </div>
                     <p class="post-text">{{ post.review }}</p>
                     <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link" target="_blank" class="post-link">🔗 {{ post.link }}</a>
-                    <div class="post-meta">
-                        <span>♡ {{ post.likesCount }}</span>
-                        <span>{{ formatDate(post.createAt) }}</span>
+                    <div class="post-actions">
+                        <span class="post-action">♡ {{ post.likesCount }}</span>
                     </div>
                 </div>
             </div>
@@ -232,30 +242,42 @@ onMounted(() => {
                     <button class="unlike-btn" @click="unlikePost(post.id)" title="Лайк алып тастау">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff3040" stroke="#ff3040" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                     </button>
+                    <div class="post-header-info">
+                        <div class="post-avatar">{{ profile.name?.charAt(0).toUpperCase() || 'U' }}</div>
+                        <div class="post-meta-info">
+                            <span class="post-author">{{ profile.name }}</span>
+                            <span class="post-time">{{ formatDate(post.createAt) }}</span>
+                        </div>
+                    </div>
+                    <div v-if="post.imgUrl" class="post-image-wrapper">
+                        <img :src="post.imgUrl" :alt="post.review" class="post-image" loading="lazy">
+                    </div>
                     <p class="post-text">{{ post.review }}</p>
                     <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link" target="_blank" class="post-link">🔗 {{ post.link }}</a>
-                    <div class="post-meta">
-                        <span>♡ {{ post.likesCount }}</span>
-                        <span>{{ formatDate(post.createAt) }}</span>
+                    <div class="post-actions">
+                        <span class="post-action">♡ {{ post.likesCount }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div v-if="activeTab === 'saved'" class="tab-content">
-            <div v-if="!profile.saved" class="empty-tab">
+            <div v-if="!profile.saved?.length" class="empty-tab">
                 <p>Нет сохраненных постов</p>
             </div>
             <div v-else class="posts-list">
-                <div class="post-card saved-post">
-                    <button class="unsave-btn" @click="unsavePost(profile.saved.id)" title="Сақталғаннан алып тастау">
+                <div v-for="post in profile.saved" :key="post.id" class="post-card saved-post">
+                    <button class="unsave-btn" @click="unsavePost(post.id)" title="Сақталғаннан алып тастау">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                     </button>
-                    <p class="post-text">{{ profile.saved.review }}</p>
-                    <a v-if="profile.saved.link" :href="profile.saved.link.startsWith('http') ? profile.saved.link : 'https://' + profile.saved.link" target="_blank" class="post-link">🔗 {{ profile.saved.link }}</a>
+                    <div v-if="post.imgUrl" class="post-image-wrapper">
+                        <img :src="post.imgUrl" :alt="post.review" class="post-image" loading="lazy">
+                    </div>
+                    <p class="post-text">{{ post.review }}</p>
+                    <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link" target="_blank" class="post-link">🔗 {{ post.link }}</a>
                     <div class="post-meta">
-                        <span>♡ {{ profile.saved.likesCount }}</span>
-                        <span>{{ formatDate(profile.saved.createAt) }}</span>
+                        <span>♡ {{ post.likesCount }}</span>
+                        <span>{{ formatDate(post.createAt) }}</span>
                     </div>
                 </div>
             </div>
@@ -323,21 +345,21 @@ onMounted(() => {
 .empty-tab { text-align: center; padding: 40px 0; }
 .empty-tab p { color: #555; font-size: 15px; margin: 0; }
 
+.post-header-info { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.post-meta-info { display: flex; flex-direction: column; gap: 2px; }
+.post-author { font-size: 15px; font-weight: 600; color: #fff; }
+.post-time { font-size: 13px; color: #555; }
+
 .posts-list { display: flex; flex-direction: column; gap: 16px; }
-.post-card { padding: 16px; border: 1px solid #222; border-radius: 16px; position: relative; overflow: hidden; }
-.post-text { font-size: 15px; color: #fff; line-height: 1.5; margin: 0 0 8px; padding-right: 36px; word-wrap: break-word; }
-.delete-btn { position: absolute; top: 12px; right: 12px; background: #111; border: 1px solid #333; color: #666; cursor: pointer; padding: 6px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-.delete-btn:hover { color: #ff4444; border-color: #ff4444; background: rgba(255,68,68,0.1); }
-.post-link { display: block; font-size: 14px; color: #1d9bf0; text-decoration: none; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
-.post-link:hover { text-decoration: underline; }
-.post-meta { display: flex; gap: 16px; font-size: 14px; color: #555; }
+.post-image-wrapper { margin: 8px -16px 12px; height: 300px; background: #111; display: flex; align-items: center; justify-content: center; overflow: hidden; border-top: 1px solid #222; border-bottom: 1px solid #222; }
+.post-image { width: 100%; height: 100%; object-fit: cover; }
 
-.saved-post { position: relative; border-color: #333; background: linear-gradient(135deg, rgba(255,193,7,0.05), transparent); }
-.saved-badge { position: absolute; top: 12px; right: 12px; font-size: 18px; }
-
-.unlike-btn { position: absolute; top: 12px; right: 12px; background: #111; border: 1px solid #333; color: #ff3040; cursor: pointer; padding: 6px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+.unlike-btn { position: absolute; top: 12px; right: 12px; background: #111; border: 1px solid #333; color: #ff3040; cursor: pointer; padding: 6px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 10; }
 .unlike-btn:hover { border-color: #ff3040; background: rgba(255,48,64,0.1); }
 
-.unsave-btn { position: absolute; top: 12px; right: 12px; background: #111; border: 1px solid #333; color: #ffc107; cursor: pointer; padding: 6px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+.unsave-btn { position: absolute; top: 12px; right: 12px; background: #111; border: 1px solid #333; color: #ffc107; cursor: pointer; padding: 6px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 10; }
 .unsave-btn:hover { border-color: #ffc107; background: rgba(255,193,7,0.1); }
+
+.delete-btn { position: absolute; top: 12px; right: 12px; background: #111; border: 1px solid #333; color: #666; cursor: pointer; padding: 6px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 10; }
+.delete-btn:hover { color: #ff4444; border-color: #ff4444; background: rgba(255,68,68,0.1); }
 </style>
