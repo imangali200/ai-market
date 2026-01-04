@@ -227,11 +227,38 @@ export class UserService {
     try {
       const profile = await this.userRepository.findOne({
         where: { id },
-        relations: ['posts', 'posts.comments', 'posts.comments.author'],
+        relations: [
+          'posts', 
+          'posts.author', 
+          'posts.comments', 
+          'posts.comments.author'
+        ],
         select: {
           id: true,
           name: true,
           surname: true,
+          posts: {
+            id: true,
+            review: true,
+            imgUrl: true,
+            link: true,
+            createAt: true,
+            author: {
+              id: true,
+              name: true,
+              surname: true
+            },
+            comments: {
+              id: true,
+              text: true,
+              createAt: true,
+              author: {
+                id: true,
+                name: true,
+                surname: true
+              }
+            }
+          }
         },
       });
       if (!profile) throw new NotFoundException('not found this user');
@@ -246,10 +273,39 @@ export class UserService {
       const profile = await this.userRepository.findOne({
         where: { id },
         relations: [
-          'postLikes', 'postLikes.comments', 'postLikes.comments.author',
-          'saved', 'saved.comments', 'saved.comments.author',
-          'posts', 'posts.comments', 'posts.comments.author'
+          'postLikes', 
+          'postLikes.author',
+          'postLikes.comments', 
+          'postLikes.comments.author',
+          'saved', 
+          'saved.author',
+          'saved.comments', 
+          'saved.comments.author',
+          'posts', 
+          'posts.author',
+          'posts.comments', 
+          'posts.comments.author'
         ],
+        select: {
+          id: true,
+          name: true,
+          surname: true,
+          phoneNumber: true,
+          role: true,
+          isActive: true,
+          posts: {
+            id: true, review: true, imgUrl: true, link: true, createAt: true,
+            author: { id: true, name: true, surname: true }
+          },
+          postLikes: {
+            id: true, review: true, imgUrl: true, link: true, createAt: true,
+            author: { id: true, name: true, surname: true }
+          },
+          saved: {
+            id: true, review: true, imgUrl: true, link: true, createAt: true,
+            author: { id: true, name: true, surname: true }
+          }
+        }
       });
       if (!profile) throw new NotFoundException('not found this user');
       delete profile.password;

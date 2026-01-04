@@ -285,15 +285,15 @@ onMounted(() => {
                     <button class="delete-btn" @click="deletePost(post.id)" title="Удалить">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                     </button>
-                    <div class="post-header-info">
-                        <div class="post-avatar">{{ profile.name?.charAt(0).toUpperCase() || 'U' }}</div>
-                        <div class="post-meta-info">
-                            <span class="post-author">{{ profile.name }}</span>
+                    <div class="post-header">
+                        <div class="post-avatar">{{ post.author?.name?.charAt(0).toUpperCase() || 'U' }}</div>
+                        <div class="post-user-info">
+                            <span class="post-name">{{ post.author?.name }} {{ post.author?.surname }}</span>
                             <span class="post-time">{{ formatDate(post.createAt) }}</span>
                         </div>
                     </div>
-                    <div v-if="post.imgUrl" class="post-image-wrapper">
-                        <img :src="post.imgUrl" :alt="post.review" class="post-image" loading="lazy">
+                    <div v-if="post.imgUrl" class="post-image">
+                        <img :src="post.imgUrl" :alt="post.review" loading="lazy">
                     </div>
                     <p class="post-text">{{ post.review }}</p>
                     <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link" target="_blank" class="post-link">🔗 {{ post.link }}</a>
@@ -345,15 +345,15 @@ onMounted(() => {
                     <button class="unlike-btn" @click="unlikePost(post.id)" title="Лайк алып тастау">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff3040" stroke="#ff3040" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                     </button>
-                    <div class="post-header-info">
-                        <div class="post-avatar">{{ profile.name?.charAt(0).toUpperCase() || 'U' }}</div>
-                        <div class="post-meta-info">
-                            <span class="post-author">{{ profile.name }}</span>
+                    <div class="post-header">
+                        <div class="post-avatar">{{ post.author?.name?.charAt(0).toUpperCase() || 'U' }}</div>
+                        <div class="post-user-info">
+                            <span class="post-name">{{ post.author?.name }} {{ post.author?.surname }}</span>
                             <span class="post-time">{{ formatDate(post.createAt) }}</span>
                         </div>
                     </div>
-                    <div v-if="post.imgUrl" class="post-image-wrapper">
-                        <img :src="post.imgUrl" :alt="post.review" class="post-image" loading="lazy">
+                    <div v-if="post.imgUrl" class="post-image">
+                        <img :src="post.imgUrl" :alt="post.review" loading="lazy">
                     </div>
                     <p class="post-text">{{ post.review }}</p>
                     <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link" target="_blank" class="post-link">🔗 {{ post.link }}</a>
@@ -519,18 +519,19 @@ onMounted(() => {
 .empty-tab { text-align: center; padding: 40px 0; }
 .empty-tab p { color: #fff; font-size: 15px; margin: 0; }
 
-.post-header-info { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.post-meta-info { display: flex; flex-direction: column; gap: 2px; }
-.post-author { font-size: 15px; font-weight: 600; color: #fff; }
-.post-time { font-size: 13px; color: #fff; opacity: 0.9; }
+.post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.post-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: #fff; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); flex-shrink: 0; border: 2px solid #333; }
+.post-user-info { flex: 1; display: flex; align-items: center; gap: 8px; }
+.post-name { font-size: 15px; font-weight: 600; color: #fff; }
+.post-time { font-size: 14px; color: #737373; }
 
 .post-text { font-size: 15px; color: #fff; line-height: 1.5; margin: 0 0 12px; word-wrap: break-word; }
 .post-link { display: block; font-size: 14px; color: #7dd3fc; text-decoration: none; margin-bottom: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; font-weight: 500; }
 .post-link:hover { text-decoration: underline; color: #fff; }
 
 .posts-list { display: flex; flex-direction: column; gap: 16px; }
-.post-image-wrapper { margin: 8px -16px 12px; height: 300px; background: #111; display: flex; align-items: center; justify-content: center; overflow: hidden; border-top: 1px solid #222; border-bottom: 1px solid #222; }
-.post-image { width: 100%; height: 100%; object-fit: cover; }
+.post-image { margin-bottom: 12px; border-radius: 4px; overflow: hidden; border: 1px solid #262626; }
+.post-image img { width: 100%; max-height: 600px; object-fit: contain; display: block; background: #000; }
 
 .unlike-btn { position: absolute; top: 12px; right: 12px; background: #111; border: 1px solid #333; color: #ff3040; cursor: pointer; padding: 6px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 10; }
 .unlike-btn:hover { border-color: #ff3040; background: rgba(255,48,64,0.1); }

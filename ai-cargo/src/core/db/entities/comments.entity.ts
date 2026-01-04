@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UserEntity } from "./user.entity";
 import { PostEntity } from "./post.entity";
 
@@ -15,4 +15,7 @@ export class CommentsEntity{
 
     @ManyToOne(()=>PostEntity,(post)=>post.comments)
     post:PostEntity
+
+    @CreateDateColumn({type:"timestamp"})
+    createAt:Date
 }

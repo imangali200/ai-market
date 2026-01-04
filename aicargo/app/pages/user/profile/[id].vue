@@ -180,11 +180,14 @@ watch(userId, (newId) => {
                         <div class="post-avatar">{{ profile.name?.charAt(0).toUpperCase() }}</div>
                         <div class="post-content">
                             <div class="post-header">
-                                <span class="post-author">{{ profile.name }}</span>
-                                <span class="post-time">{{ formatDate(post.createAt) }}</span>
+                                <div class="post-avatar">{{ post.author?.name?.charAt(0).toUpperCase() || 'U' }}</div>
+                                <div class="post-user-info">
+                                    <span class="post-name">{{ post.author?.name }} {{ post.author?.surname }}</span>
+                                    <span class="post-time">{{ formatDate(post.createAt) }}</span>
+                                </div>
                             </div>
-                            <div v-if="post.imgUrl" class="post-image-wrapper">
-                                <img :src="post.imgUrl" :alt="post.review" class="post-image" loading="lazy">
+                            <div v-if="post.imgUrl" class="post-image">
+                                <img :src="post.imgUrl" :alt="post.review" loading="lazy">
                             </div>
                             <p class="post-text">{{ post.review }}</p>
                             <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link" target="_blank" class="post-link">
@@ -284,14 +287,16 @@ watch(userId, (newId) => {
 .post-item { display: flex; gap: 12px; padding: 16px 0; border-bottom: 1px solid #222; }
 .post-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: #fff; flex-shrink: 0; }
 .post-content { flex: 1; }
-.post-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-.post-author { font-size: 15px; font-weight: 600; color: #fff; }
-.post-time { font-size: 14px; color: #aaa; }
+.post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.post-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: #fff; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); flex-shrink: 0; border: 2px solid #333; }
+.post-user-info { flex: 1; display: flex; align-items: center; gap: 8px; }
+.post-name { font-size: 15px; font-weight: 600; color: #fff; }
+.post-time { font-size: 14px; color: #737373; }
 .post-text { font-size: 15px; color: #fff; line-height: 1.4; margin: 0 0 12px; }
 .post-link { display: inline-block; font-size: 14px; color: #7dd3fc; text-decoration: none; margin-bottom: 12px; font-weight: 500; }
 .post-link:hover { text-decoration: underline; color: #fff; }
-.post-image-wrapper { margin: 8px 0 12px; height: 280px; background: #111; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px; border: 1px solid #222; }
-.post-image { width: 100%; height: 100%; object-fit: cover; }
+.post-image { margin-bottom: 12px; border-radius: 4px; overflow: hidden; border: 1px solid #262626; }
+.post-image img { width: 100%; max-height: 600px; object-fit: contain; display: block; background: #000; }
 
 /* Comments Section (Inline) */
 .comments-section { margin-top: 16px; padding-top: 12px; border-top: 1px solid #262626; }
