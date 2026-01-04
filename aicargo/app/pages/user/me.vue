@@ -5,14 +5,29 @@ definePageMeta({
 
 import { useToast } from '~/composables/useToast'
 
+interface Author {
+    id: number
+    name: string
+    surname: string
+    code: string
+}
+
+interface Comment {
+    id: number
+    text: string
+    createAt: string
+    author?: Author
+}
+
 interface Post {
     id: number
     link: string
     review: string
     imgUrl: string | null
     likesCount: number
-    comments?: any[]
+    comments?: Comment[]
     createAt: string
+    author?: Author
 }
 
 interface Profile {
@@ -44,8 +59,8 @@ const isLoggedIn = computed(() => !!token.value)
 
 // Comment states
 const expandedPosts = ref<Set<number>>(new Set())
-const commentText = ref<{[key: number]: string}>({})
-const sendingComment = ref<{[key: number]: boolean}>({})
+const commentText = ref<{ [key: number]: string }>({})
+const sendingComment = ref<{ [key: number]: boolean }>({})
 
 const whatsappLink = computed(() => {
     if (!profile.value) return '#'
@@ -79,7 +94,7 @@ function formatDate(date: string) {
     const now = new Date()
     const postDate = new Date(date)
     const diff = Math.floor((now.getTime() - postDate.getTime()) / 1000)
-    
+
     if (diff < 60) return 'сейчас'
     if (diff < 3600) return Math.floor(diff / 60) + ' мин'
     if (diff < 86400) return Math.floor(diff / 3600) + ' ч'
@@ -93,7 +108,7 @@ function goToLogin() {
 
 async function deletePost(postId: number) {
     if (!confirm('Удалить этот пост?')) return
-    
+
     try {
         await $axios.delete(`post/${postId}`, {
             headers: { 'Authorization': `Bearer ${token.value}` }
@@ -138,28 +153,63 @@ function toggleComments(postId: number) {
     }
 }
 
+async function likePost(postId: number) {
+    if (!token.value) return
+
+    // Find post in all possible tabs
+    const allPosts = [
+        ...(profile.value?.posts || []),
+        ...(profile.value?.postLikes || []),
+        ...(profile.value?.saved || [])
+    ]
+
+    const targetPosts = allPosts.filter(p => p.id === postId)
+    if (targetPosts.length === 0) return
+
+    // Since we don't have isLiked in me.vue's Post interface yet, 
+    // and the backend endpoint toggles it, we'll just optimistic update the count.
+    // However, index.vue shows it's better to have isLiked.
+
+    try {
+        await $axios.get('post/likes/' + postId, {
+            headers: { 'Authorization': `Bearer ${token.value}` }
+        })
+        // If we are in the 'likes' tab and we just unliked, we should remove it
+        if (activeTab.value === 'likes') {
+            if (profile.value) {
+                profile.value.postLikes = profile.value.postLikes.filter(p => p.id !== postId)
+            }
+        } else {
+            // Otherwise just refresh profile to get updated counts
+            getProfile()
+        }
+    } catch (error) {
+        console.error('Like error:', error)
+    }
+}
+
 // Send comment
 async function sendComment(postId: number) {
     const text = commentText.value[postId]?.trim()
     if (!text) return
-    
+
     sendingComment.value[postId] = true
     try {
-        const response = await $axios.post('post/comment', 
+        const response = await $axios.post('post/comment',
             {
                 postId: postId,
                 text: text
             },
             { headers: { 'Authorization': `Bearer ${token.value}` } }
         )
-        
+
         // Find post in all possible tabs
         const allPosts = [
             ...(profile.value?.posts || []),
             ...(profile.value?.postLikes || []),
             ...(profile.value?.saved || [])
         ]
-        
+
         const targetPosts = allPosts.filter(p => p.id === postId)
         targetPosts.forEach(post => {
             if (!post.comments) post.comments = []
@@ -168,13 +218,14 @@ async function sendComment(postId: number) {
                 text: text,
                 createAt: new Date().toISOString(),
                 author: {
-                    id: profile.value?.id,
-                    name: profile.value?.name,
-                    surname: profile.value?.surname
+                    id: profile.value?.id || 0,
+                    name: profile.value?.name || '',
+                    surname: profile.value?.surname || '',
+                    code: profile.value?.code || ''
                 }
             })
         })
-        
+
         commentText.value[postId] = ''
         toast.success('Комментарий қосылды', { position: 'top-center' })
     } catch (error: any) {
@@ -235,14 +286,17 @@ onMounted(() => {
             <div class="activation-icon">⏳</div>
             <h2>Аккаунт не активирован</h2>
             <p>Ваш аккаунт ожидает активации администратором. Отправьте заявку через WhatsApp для быстрой активации.</p>
-            
+
             <div class="user-code">
                 <span class="code-label">Ваш код:</span>
                 <span class="code-value">{{ profile.code }}</span>
             </div>
 
             <a :href="whatsappLink" target="_blank" class="whatsapp-btn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
                 Отправить в WhatsApp
             </a>
 
@@ -283,27 +337,38 @@ onMounted(() => {
             <div v-else class="posts-list">
                 <div v-for="post in profile.posts" :key="post.id" class="post-card">
                     <button class="delete-btn" @click="deletePost(post.id)" title="Удалить">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M3 6h18" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
                     </button>
-                    <div class="post-header">
-                        <div class="post-avatar">{{ post.author?.name?.charAt(0).toUpperCase() || 'U' }}</div>
-                        <div class="post-user-info">
-                            <span class="post-name">{{ post.author?.name }} {{ post.author?.surname }}</span>
-                            <span class="post-time">{{ formatDate(post.createAt) }}</span>
-                        </div>
+                    <div class="post-user-info">
+                        <span class="post-name">{{ post.author?.name }} {{ post.author?.surname }}</span>
+                        <span class="post-time">{{ formatDate(post.createAt) }}</span>
                     </div>
                     <div v-if="post.imgUrl" class="post-image">
                         <img :src="post.imgUrl" :alt="post.review" loading="lazy">
                     </div>
                     <p class="post-text">{{ post.review }}</p>
-                    <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link" target="_blank" class="post-link">🔗 {{ post.link }}</a>
+                    <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link"
+                        target="_blank" class="post-link">🔗 {{ post.link }}</a>
                     <div class="post-actions">
                         <button class="action-btn" @click="likePost(post.id)">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
                             <span>{{ post.likesCount }}</span>
                         </button>
                         <button class="action-btn" @click="toggleComments(post.id)">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                            </svg>
                         </button>
                     </div>
 
@@ -311,14 +376,18 @@ onMounted(() => {
                     <div v-if="expandedPosts.has(post.id)" class="comments-section">
                         <div class="comment-input-row">
                             <div class="comment-avatar">{{ profile?.name?.charAt(0).toUpperCase() || 'U' }}</div>
-                            <input v-model="commentText[post.id]" @keyup.enter="sendComment(post.id)" type="text" placeholder="Оставьте комментарий..." class="comment-input" />
-                            <button @click="sendComment(post.id)" :disabled="!commentText[post.id]?.trim() || sendingComment[post.id]" class="comment-submit">
+                            <input v-model="commentText[post.id]" @keyup.enter="sendComment(post.id)" type="text"
+                                placeholder="Оставьте комментарий..." class="comment-input" />
+                            <button @click="sendComment(post.id)"
+                                :disabled="!commentText[post.id]?.trim() || sendingComment[post.id]"
+                                class="comment-submit">
                                 {{ sendingComment[post.id] ? '...' : 'Отправить' }}
                             </button>
                         </div>
                         <div v-if="post.comments?.length" class="comments-list">
                             <div v-for="comment in post.comments" :key="comment.id" class="comment-item">
-                                <div class="comment-avatar small">{{ comment.author?.name?.charAt(0).toUpperCase() || 'U' }}</div>
+                                <div class="comment-avatar small">{{ comment.author?.name?.charAt(0).toUpperCase() ||
+                                    'U' }}</div>
                                 <div class="comment-content">
                                     <div class="comment-header-small">
                                         <span class="comment-author-name">@{{ comment.author?.name || 'user' }}</span>
@@ -343,7 +412,11 @@ onMounted(() => {
             <div v-else class="posts-list">
                 <div v-for="post in profile.postLikes" :key="post.id" class="post-card">
                     <button class="unlike-btn" @click="unlikePost(post.id)" title="Лайк алып тастау">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff3040" stroke="#ff3040" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff3040" stroke="#ff3040"
+                            stroke-width="2">
+                            <path
+                                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                        </svg>
                     </button>
                     <div class="post-header">
                         <div class="post-avatar">{{ post.author?.name?.charAt(0).toUpperCase() || 'U' }}</div>
@@ -356,14 +429,23 @@ onMounted(() => {
                         <img :src="post.imgUrl" :alt="post.review" loading="lazy">
                     </div>
                     <p class="post-text">{{ post.review }}</p>
-                    <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link" target="_blank" class="post-link">🔗 {{ post.link }}</a>
+                    <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link"
+                        target="_blank" class="post-link">🔗 {{ post.link }}</a>
                     <div class="post-actions">
                         <button class="action-btn" @click="likePost(post.id)">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
                             <span>{{ post.likesCount }}</span>
                         </button>
                         <button class="action-btn" @click="toggleComments(post.id)">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                            </svg>
                         </button>
                     </div>
 
@@ -371,14 +453,18 @@ onMounted(() => {
                     <div v-if="expandedPosts.has(post.id)" class="comments-section">
                         <div class="comment-input-row">
                             <div class="comment-avatar">{{ profile?.name?.charAt(0).toUpperCase() || 'U' }}</div>
-                            <input v-model="commentText[post.id]" @keyup.enter="sendComment(post.id)" type="text" placeholder="Оставьте комментарий..." class="comment-input" />
-                            <button @click="sendComment(post.id)" :disabled="!commentText[post.id]?.trim() || sendingComment[post.id]" class="comment-submit">
+                            <input v-model="commentText[post.id]" @keyup.enter="sendComment(post.id)" type="text"
+                                placeholder="Оставьте комментарий..." class="comment-input" />
+                            <button @click="sendComment(post.id)"
+                                :disabled="!commentText[post.id]?.trim() || sendingComment[post.id]"
+                                class="comment-submit">
                                 {{ sendingComment[post.id] ? '...' : 'Отправить' }}
                             </button>
                         </div>
                         <div v-if="post.comments?.length" class="comments-list">
                             <div v-for="comment in post.comments" :key="comment.id" class="comment-item">
-                                <div class="comment-avatar small">{{ comment.author?.name?.charAt(0).toUpperCase() || 'U' }}</div>
+                                <div class="comment-avatar small">{{ comment.author?.name?.charAt(0).toUpperCase() ||
+                                    'U' }}</div>
                                 <div class="comment-content">
                                     <div class="comment-header-small">
                                         <span class="comment-author-name">@{{ comment.author?.name || 'user' }}</span>
@@ -403,23 +489,38 @@ onMounted(() => {
             <div v-else class="posts-list">
                 <div v-for="post in profile.saved" :key="post.id" class="post-card saved-post">
                     <button class="unsave-btn" @click="unsavePost(post.id)" title="Сақталғаннан алып тастау">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                        </svg>
                     </button>
                     <div v-if="post.imgUrl" class="post-image-wrapper">
                         <img :src="post.imgUrl" :alt="post.review" class="post-image" loading="lazy">
                     </div>
                     <p class="post-text">{{ post.review }}</p>
-                    <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link" target="_blank" class="post-link">🔗 {{ post.link }}</a>
+                    <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link"
+                        target="_blank" class="post-link">🔗 {{ post.link }}</a>
                     <div class="post-actions">
                         <button class="action-btn" @click="likePost(post.id)">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
                             <span>{{ post.likesCount }}</span>
                         </button>
                         <button class="action-btn" @click="toggleComments(post.id)">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                            </svg>
                         </button>
                         <button class="action-btn save-btn saved">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                            </svg>
                         </button>
                     </div>
 
@@ -427,14 +528,18 @@ onMounted(() => {
                     <div v-if="expandedPosts.has(post.id)" class="comments-section">
                         <div class="comment-input-row">
                             <div class="comment-avatar">{{ profile?.name?.charAt(0).toUpperCase() || 'U' }}</div>
-                            <input v-model="commentText[post.id]" @keyup.enter="sendComment(post.id)" type="text" placeholder="Оставьте комментарий..." class="comment-input" />
-                            <button @click="sendComment(post.id)" :disabled="!commentText[post.id]?.trim() || sendingComment[post.id]" class="comment-submit">
+                            <input v-model="commentText[post.id]" @keyup.enter="sendComment(post.id)" type="text"
+                                placeholder="Оставьте комментарий..." class="comment-input" />
+                            <button @click="sendComment(post.id)"
+                                :disabled="!commentText[post.id]?.trim() || sendingComment[post.id]"
+                                class="comment-submit">
                                 {{ sendingComment[post.id] ? '...' : 'Отправить' }}
                             </button>
                         </div>
                         <div v-if="post.comments?.length" class="comments-list">
                             <div v-for="comment in post.comments" :key="comment.id" class="comment-item">
-                                <div class="comment-avatar small">{{ comment.author?.name?.charAt(0).toUpperCase() || 'U' }}</div>
+                                <div class="comment-avatar small">{{ comment.author?.name?.charAt(0).toUpperCase() ||
+                                    'U' }}</div>
                                 <div class="comment-content">
                                     <div class="comment-header-small">
                                         <span class="comment-author-name">@{{ comment.author?.name || 'user' }}</span>
@@ -455,116 +560,641 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.login-required { min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.login-card { text-align: center; padding: 40px 24px; border: 1px solid #333; border-radius: 20px; max-width: 320px; }
-.login-icon { font-size: 64px; margin-bottom: 16px; }
-.login-card h2 { font-size: 24px; font-weight: 700; color: #fff; margin: 0 0 8px; }
-.login-card p { font-size: 15px; color: #ddd; margin: 0 0 24px; }
-.login-btn { width: 100%; padding: 14px 24px; background: #fff; color: #000; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
-.login-btn:hover { background: #eee; }
+.login-required {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
 
-.loading-screen { min-height: 60vh; display: flex; align-items: center; justify-content: center; }
-.spinner { width: 32px; height: 32px; border: 3px solid #333; border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.login-card {
+    text-align: center;
+    padding: 40px 24px;
+    border: 1px solid #333;
+    border-radius: 20px;
+    max-width: 320px;
+}
+
+.login-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.login-card h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 8px;
+}
+
+.login-card p {
+    font-size: 15px;
+    color: #ddd;
+    margin: 0 0 24px;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px 24px;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.login-btn:hover {
+    background: #eee;
+}
+
+.loading-screen {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #333;
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 
 /* Activation Page */
-.activation-page { min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.activation-card { text-align: center; padding: 40px 24px; border: 1px solid #333; border-radius: 24px; max-width: 380px; width: 100%; }
-.activation-icon { font-size: 64px; margin-bottom: 20px; }
-.activation-card h2 { font-size: 22px; font-weight: 700; color: #fff; margin: 0 0 12px; }
-.activation-card > p { font-size: 15px; color: #eee; line-height: 1.6; margin: 0 0 24px; }
+.activation-page {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
 
-.user-code { background: #111; border: 1px solid #333; border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
-.code-label { font-size: 14px; color: #bbb; }
-.code-value { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+.activation-card {
+    text-align: center;
+    padding: 40px 24px;
+    border: 1px solid #333;
+    border-radius: 24px;
+    max-width: 380px;
+    width: 100%;
+}
 
-.whatsapp-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; background: #25D366; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; color: #fff; text-decoration: none; cursor: pointer; transition: all 0.2s; }
-.whatsapp-btn:hover { background: #20BD5A; }
-.whatsapp-btn svg { width: 22px; height: 22px; }
+.activation-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
 
-.hint-text { font-size: 13px; color: #aaa; margin: 16px 0 24px; line-height: 1.5; }
+.activation-card h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 12px;
+}
 
-.logout-btn { width: 100%; padding: 14px; background: transparent; border: 1px solid #333; border-radius: 12px; color: #ddd; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-.logout-btn:hover { background: #111; color: #fff; }
+.activation-card>p {
+    font-size: 15px;
+    color: #eee;
+    line-height: 1.6;
+    margin: 0 0 24px;
+}
+
+.user-code {
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.code-label {
+    font-size: 14px;
+    color: #bbb;
+}
+
+.code-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1px;
+}
+
+.whatsapp-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 16px;
+    background: #25D366;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.whatsapp-btn:hover {
+    background: #20BD5A;
+}
+
+.whatsapp-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.hint-text {
+    font-size: 13px;
+    color: #aaa;
+    margin: 16px 0 24px;
+    line-height: 1.5;
+}
+
+.logout-btn {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    border: 1px solid #333;
+    border-radius: 12px;
+    color: #ddd;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: #111;
+    color: #fff;
+}
 
 /* Profile Page */
-.profile-page { padding: 20px 0; }
-.profile-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
-.profile-info { flex: 1; }
-.profile-name { font-size: 22px; font-weight: 700; color: #fff; margin: 0 0 4px; }
-.profile-username { font-size: 15px; color: #fff; margin: 0; }
-.profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: #fff; }
+.profile-page {
+    padding: 20px 0;
+}
 
-.profile-stats { margin-bottom: 20px; }
-.stat { font-size: 15px; color: #fff; }
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
 
-.profile-actions { display: flex; gap: 12px; margin-bottom: 24px; }
-.profile-btn { flex: 1; padding: 12px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; transition: all 0.2s; background: #111; border: 1px solid #222; color: #fff; }
-.profile-btn.logout:hover { background: #222; }
-.profile-btn.phone { background: #111; color: #fff; }
-.profile-btn.phone:hover { background: #222; }
+.profile-info {
+    flex: 1;
+}
+
+.profile-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 4px;
+}
+
+.profile-username {
+    font-size: 15px;
+    color: #fff;
+    margin: 0;
+}
+
+.profile-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.profile-stats {
+    margin-bottom: 20px;
+}
+
+.stat {
+    font-size: 15px;
+    color: #fff;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.profile-btn {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s;
+    background: #111;
+    border: 1px solid #222;
+    color: #fff;
+}
+
+.profile-btn.logout:hover {
+    background: #222;
+}
+
+.profile-btn.phone {
+    background: #111;
+    color: #fff;
+}
+
+.profile-btn.phone:hover {
+    background: #222;
+}
 
 /* Post Buttons */
-.post-actions { display: flex; align-items: center; gap: 16px; margin-top: 12px; }
-.action-btn { display: flex; align-items: center; gap: 6px; padding: 8px 0; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 14px; transition: all 0.2s; }
-.action-btn:hover { opacity: 0.7; }
-.action-btn svg { width: 24px; height: 24px; }
+.post-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 12px;
+}
 
-.profile-tabs { display: flex; border-bottom: 1px solid #222; margin-bottom: 20px; }
-.profile-tabs button { flex: 1; padding: 14px 0; background: transparent; border: none; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; position: relative; transition: color 0.2s; }
-.profile-tabs button.active { color: #fff; }
-.profile-tabs button.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: #fff; }
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 0;
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
 
-.tab-content { min-height: 200px; }
-.empty-tab { text-align: center; padding: 40px 0; }
-.empty-tab p { color: #fff; font-size: 15px; margin: 0; }
+.action-btn:hover {
+    opacity: 0.7;
+}
 
-.post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.post-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: #fff; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); flex-shrink: 0; border: 2px solid #333; }
-.post-user-info { flex: 1; display: flex; align-items: center; gap: 8px; }
-.post-name { font-size: 15px; font-weight: 600; color: #fff; }
-.post-time { font-size: 14px; color: #737373; }
+.action-btn svg {
+    width: 24px;
+    height: 24px;
+}
 
-.post-text { font-size: 15px; color: #fff; line-height: 1.5; margin: 0 0 12px; word-wrap: break-word; }
-.post-link { display: block; font-size: 14px; color: #7dd3fc; text-decoration: none; margin-bottom: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; font-weight: 500; }
-.post-link:hover { text-decoration: underline; color: #fff; }
+.profile-tabs {
+    display: flex;
+    border-bottom: 1px solid #222;
+    margin-bottom: 20px;
+}
 
-.posts-list { display: flex; flex-direction: column; gap: 16px; }
-.post-image { margin-bottom: 12px; border-radius: 4px; overflow: hidden; border: 1px solid #262626; }
-.post-image img { width: 100%; max-height: 600px; object-fit: contain; display: block; background: #000; }
+.profile-tabs button {
+    flex: 1;
+    padding: 14px 0;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+}
 
-.unlike-btn { position: absolute; top: 12px; right: 12px; background: #111; border: 1px solid #333; color: #ff3040; cursor: pointer; padding: 6px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 10; }
-.unlike-btn:hover { border-color: #ff3040; background: rgba(255,48,64,0.1); }
+.profile-tabs button.active {
+    color: #fff;
+}
 
-.unsave-btn { position: absolute; top: 12px; right: 12px; background: #111; border: 1px solid #333; color: #ffc107; cursor: pointer; padding: 6px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 10; }
-.unsave-btn:hover { border-color: #ffc107; background: rgba(255,193,7,0.1); }
+.profile-tabs button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #fff;
+}
+
+.tab-content {
+    min-height: 200px;
+}
+
+.empty-tab {
+    text-align: center;
+    padding: 40px 0;
+}
+
+.empty-tab p {
+    color: #fff;
+    font-size: 15px;
+    margin: 0;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.post-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    flex-shrink: 0;
+    border: 2px solid #333;
+}
+
+.post-user-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.post-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.post-time {
+    font-size: 14px;
+    color: #737373;
+}
+
+.post-text {
+    font-size: 15px;
+    color: #fff;
+    line-height: 1.5;
+    margin: 0 0 12px;
+    word-wrap: break-word;
+}
+
+.post-link {
+    display: block;
+    font-size: 14px;
+    color: #7dd3fc;
+    text-decoration: none;
+    margin-bottom: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    font-weight: 500;
+}
+
+.post-link:hover {
+    text-decoration: underline;
+    color: #fff;
+}
+
+.posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.post-image {
+    margin-bottom: 12px;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #262626;
+}
+
+.post-image img {
+    width: 100%;
+    max-height: 600px;
+    object-fit: contain;
+    display: block;
+    background: #000;
+}
+
+.unlike-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #111;
+    border: 1px solid #333;
+    color: #ff3040;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.unlike-btn:hover {
+    border-color: #ff3040;
+    background: rgba(255, 48, 64, 0.1);
+}
+
+.unsave-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #111;
+    border: 1px solid #333;
+    color: #ffc107;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.unsave-btn:hover {
+    border-color: #ffc107;
+    background: rgba(255, 193, 7, 0.1);
+}
 
 /* Comments Section (Inline) */
-.comments-section { margin-top: 16px; padding-top: 12px; border-top: 1px solid #262626; }
-.comment-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid #222; padding-bottom: 12px; }
-.comment-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #333, #555); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #888; flex-shrink: 0; }
-.comment-avatar.small { width: 28px; height: 28px; font-size: 11px; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; border: 1px solid #333; }
-.comment-input { flex: 1; height: 40px; background: transparent; border: none; outline: none; color: #fff; font-size: 14px; }
-.comment-input::placeholder { color: #555; }
-.comment-submit { padding: 8px 16px; background: transparent; border: 1px solid #333; border-radius: 20px; color: #fff; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-.comment-submit:hover:not(:disabled) { background: #fff; color: #000; }
-.comment-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.comments-section {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #262626;
+}
 
-.comments-list { display: flex; flex-direction: column; gap: 12px; }
-.comment-item { display: flex; gap: 10px; }
-.comment-avatar-small { display: none; } /* Replaced by .comment-avatar.small */
+.comment-input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #222;
+    padding-bottom: 12px;
+}
 
-.comment-header-small { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
-.comment-author-name { font-size: 14px; font-weight: 600; color: #fff; }
-.comment-time { font-size: 13px; color: #555; }
-.comment-text-small { font-size: 14px; color: #ccc; line-height: 1.4; margin: 0; }
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #333, #555);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+    flex-shrink: 0;
+}
 
-.no-comments { padding: 20px 0; text-align: center; }
-.no-comments p { font-size: 14px; color: #555; margin: 0; }
+.comment-avatar.small {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    color: #fff;
+    border: 1px solid #333;
+}
 
-.post-actions { display: flex; align-items: center; gap: 16px; }
-.action-btn { display: flex; align-items: center; gap: 6px; padding: 8px 0; background: transparent; border: none; color: #f5f5f5; cursor: pointer; font-size: 14px; transition: all 0.2s; }
-.action-btn:hover { opacity: 0.7; }
-.action-btn svg { width: 24px; height: 24px; }
-.save-btn { margin-left: auto; }
+.comment-input {
+    flex: 1;
+    height: 40px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 14px;
+}
+
+.comment-input::placeholder {
+    color: #555;
+}
+
+.comment-submit {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid #333;
+    border-radius: 20px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.comment-submit:hover:not(:disabled) {
+    background: #fff;
+    color: #000;
+}
+
+.comment-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.comment-item {
+    display: flex;
+    gap: 10px;
+}
+
+.comment-avatar-small {
+    display: none;
+}
+
+/* Replaced by .comment-avatar.small */
+
+.comment-header-small {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.comment-author-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.comment-time {
+    font-size: 13px;
+    color: #555;
+}
+
+.comment-text-small {
+    font-size: 14px;
+    color: #ccc;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.no-comments {
+    padding: 20px 0;
+    text-align: center;
+}
+
+.no-comments p {
+    font-size: 14px;
+    color: #555;
+    margin: 0;
+}
+
+.post-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 0;
+    background: transparent;
+    border: none;
+    color: #f5f5f5;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    opacity: 0.7;
+}
+
+.action-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+.save-btn {
+    margin-left: auto;
+}
 </style>
