@@ -149,13 +149,13 @@ watch(userId, (newId) => {
 .profile-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
 .profile-left { flex: 1; }
 .profile-name { font-size: 26px; font-weight: 700; color: #fff; margin: 0 0 2px; }
-.profile-username { font-size: 15px; color: #777; margin: 0; }
+.profile-username { font-size: 15px; color: #ccc; margin: 0; }
 
 .profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 600; color: #fff; flex-shrink: 0; }
 
 /* Stats */
 .profile-stats { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
-.stat { font-size: 15px; color: #888; }
+.stat { font-size: 15px; color: #ccc; }
 
 /* Back Button */
 .back-button { width: 100%; padding: 14px; background: transparent; border: 1px solid #333; border-radius: 12px; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-bottom: 24px; }
@@ -163,7 +163,7 @@ watch(userId, (newId) => {
 
 /* Tabs */
 .profile-tabs { display: flex; border-bottom: 1px solid #222; margin-bottom: 0; }
-.tab { flex: 1; padding: 16px 0; background: transparent; border: none; border-bottom: 1px solid transparent; color: #666; font-size: 15px; font-weight: 600; cursor: pointer; }
+.tab { flex: 1; padding: 16px 0; background: transparent; border: none; border-bottom: 1px solid transparent; color: #bbb; font-size: 15px; font-weight: 600; cursor: pointer; }
 .tab.active { color: #fff; border-bottom-color: #fff; }
 
 /* Tab Content */
@@ -172,7 +172,7 @@ watch(userId, (newId) => {
 .empty-state { text-align: center; padding: 60px 20px; }
 .empty-icon { font-size: 48px; display: block; margin-bottom: 16px; }
 .empty-state h3 { font-size: 18px; font-weight: 600; color: #fff; margin: 0 0 8px; }
-.empty-state p { font-size: 15px; color: #555; margin: 0; }
+.empty-state p { font-size: 15px; color: #888; margin: 0; }
 .btn { padding: 12px 24px; background: #fff; border: none; border-radius: 20px; color: #000; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 16px; }
 
 /* Posts List */
@@ -182,7 +182,7 @@ watch(userId, (newId) => {
 .post-content { flex: 1; }
 .post-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .post-author { font-size: 15px; font-weight: 600; color: #fff; }
-.post-time { font-size: 14px; color: #555; }
+.post-time { font-size: 14px; color: #aaa; }
 .post-text { font-size: 15px; color: #fff; line-height: 1.4; margin: 0 0 8px; }
 .post-link { display: inline-block; font-size: 14px; color: #1d9bf0; text-decoration: none; margin-bottom: 12px; }
 .post-link:hover { text-decoration: underline; }

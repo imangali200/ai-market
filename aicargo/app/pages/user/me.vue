@@ -323,7 +323,7 @@ onMounted(() => {
 .profile-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
 .profile-info { flex: 1; }
 .profile-name { font-size: 22px; font-weight: 700; color: #fff; margin: 0 0 4px; }
-.profile-username { font-size: 15px; color: #777; margin: 0; }
+.profile-username { font-size: 15px; color: #ccc; margin: 0; }
 .profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: #fff; }
 
 .profile-stats { margin-bottom: 20px; }
@@ -337,18 +337,18 @@ onMounted(() => {
 .action-btn.phone:hover { background: #333; }
 
 .profile-tabs { display: flex; border-bottom: 1px solid #222; margin-bottom: 20px; }
-.profile-tabs button { flex: 1; padding: 14px 0; background: transparent; border: none; color: #777; font-size: 15px; font-weight: 600; cursor: pointer; position: relative; transition: color 0.2s; }
+.profile-tabs button { flex: 1; padding: 14px 0; background: transparent; border: none; color: #bbb; font-size: 15px; font-weight: 600; cursor: pointer; position: relative; transition: color 0.2s; }
 .profile-tabs button.active { color: #fff; }
 .profile-tabs button.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: #fff; }
 
 .tab-content { min-height: 200px; }
 .empty-tab { text-align: center; padding: 40px 0; }
-.empty-tab p { color: #555; font-size: 15px; margin: 0; }
+.empty-tab p { color: #888; font-size: 15px; margin: 0; }
 
 .post-header-info { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .post-meta-info { display: flex; flex-direction: column; gap: 2px; }
 .post-author { font-size: 15px; font-weight: 600; color: #fff; }
-.post-time { font-size: 13px; color: #555; }
+.post-time { font-size: 13px; color: #aaa; }
 
 .posts-list { display: flex; flex-direction: column; gap: 16px; }
 .post-image-wrapper { margin: 8px -16px 12px; height: 300px; background: #111; display: flex; align-items: center; justify-content: center; overflow: hidden; border-top: 1px solid #222; border-bottom: 1px solid #222; }
