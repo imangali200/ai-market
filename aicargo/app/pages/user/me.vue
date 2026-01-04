@@ -298,23 +298,27 @@ onMounted(() => {
                     <p class="post-text">{{ post.review }}</p>
                     <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link" target="_blank" class="post-link">🔗 {{ post.link }}</a>
                     <div class="post-actions">
-                        <span class="post-action">❤️ {{ post.likesCount }}</span>
-                        <button class="post-action comment-btn" @click="toggleComments(post.id)">
-                            💬 {{ post.comments?.length || 0 }}
+                        <button class="action-btn" @click="likePost(post.id)">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                            <span>{{ post.likesCount }}</span>
+                        </button>
+                        <button class="action-btn" @click="toggleComments(post.id)">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
                         </button>
                     </div>
 
                     <!-- Inline Comments -->
                     <div v-if="expandedPosts.has(post.id)" class="comments-section">
                         <div class="comment-input-row">
-                            <input v-model="commentText[post.id]" @keyup.enter="sendComment(post.id)" type="text" placeholder="Пікір қалдыру..." class="comment-input" />
+                            <div class="comment-avatar">{{ profile?.name?.charAt(0).toUpperCase() || 'U' }}</div>
+                            <input v-model="commentText[post.id]" @keyup.enter="sendComment(post.id)" type="text" placeholder="Оставьте комментарий..." class="comment-input" />
                             <button @click="sendComment(post.id)" :disabled="!commentText[post.id]?.trim() || sendingComment[post.id]" class="comment-submit">
-                                {{ sendingComment[post.id] ? '...' : '➤' }}
+                                {{ sendingComment[post.id] ? '...' : 'Отправить' }}
                             </button>
                         </div>
                         <div v-if="post.comments?.length" class="comments-list">
                             <div v-for="comment in post.comments" :key="comment.id" class="comment-item">
-                                <div class="comment-avatar-small">{{ comment.author?.name?.charAt(0).toUpperCase() || 'U' }}</div>
+                                <div class="comment-avatar small">{{ comment.author?.name?.charAt(0).toUpperCase() || 'U' }}</div>
                                 <div class="comment-content">
                                     <div class="comment-header-small">
                                         <span class="comment-author-name">@{{ comment.author?.name || 'user' }}</span>
@@ -325,7 +329,7 @@ onMounted(() => {
                             </div>
                         </div>
                         <div v-else class="no-comments">
-                            <p>Пікірлер жоқ</p>
+                            <p>Комментариев пока нет</p>
                         </div>
                     </div>
                 </div>
@@ -354,23 +358,27 @@ onMounted(() => {
                     <p class="post-text">{{ post.review }}</p>
                     <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link" target="_blank" class="post-link">🔗 {{ post.link }}</a>
                     <div class="post-actions">
-                        <span class="post-action">❤️ {{ post.likesCount }}</span>
-                        <button class="post-action comment-btn" @click="toggleComments(post.id)">
-                            💬 {{ post.comments?.length || 0 }}
+                        <button class="action-btn" @click="likePost(post.id)">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                            <span>{{ post.likesCount }}</span>
+                        </button>
+                        <button class="action-btn" @click="toggleComments(post.id)">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
                         </button>
                     </div>
 
                     <!-- Inline Comments -->
                     <div v-if="expandedPosts.has(post.id)" class="comments-section">
                         <div class="comment-input-row">
-                            <input v-model="commentText[post.id]" @keyup.enter="sendComment(post.id)" type="text" placeholder="Пікір қалдыру..." class="comment-input" />
+                            <div class="comment-avatar">{{ profile?.name?.charAt(0).toUpperCase() || 'U' }}</div>
+                            <input v-model="commentText[post.id]" @keyup.enter="sendComment(post.id)" type="text" placeholder="Оставьте комментарий..." class="comment-input" />
                             <button @click="sendComment(post.id)" :disabled="!commentText[post.id]?.trim() || sendingComment[post.id]" class="comment-submit">
-                                {{ sendingComment[post.id] ? '...' : '➤' }}
+                                {{ sendingComment[post.id] ? '...' : 'Отправить' }}
                             </button>
                         </div>
                         <div v-if="post.comments?.length" class="comments-list">
                             <div v-for="comment in post.comments" :key="comment.id" class="comment-item">
-                                <div class="comment-avatar-small">{{ comment.author?.name?.charAt(0).toUpperCase() || 'U' }}</div>
+                                <div class="comment-avatar small">{{ comment.author?.name?.charAt(0).toUpperCase() || 'U' }}</div>
                                 <div class="comment-content">
                                     <div class="comment-header-small">
                                         <span class="comment-author-name">@{{ comment.author?.name || 'user' }}</span>
@@ -381,7 +389,7 @@ onMounted(() => {
                             </div>
                         </div>
                         <div v-else class="no-comments">
-                            <p>Пікірлер жоқ</p>
+                            <p>Комментариев пока нет</p>
                         </div>
                     </div>
                 </div>
@@ -403,11 +411,42 @@ onMounted(() => {
                     <p class="post-text">{{ post.review }}</p>
                     <a v-if="post.link" :href="post.link.startsWith('http') ? post.link : 'https://' + post.link" target="_blank" class="post-link">🔗 {{ post.link }}</a>
                     <div class="post-actions">
-                        <span class="post-action">❤️ {{ post.likesCount }}</span>
-                        <button class="post-action comment-btn" @click="openComments(post.id)">
-                            💬 {{ post.comments?.length || 0 }}
+                        <button class="action-btn" @click="likePost(post.id)">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                            <span>{{ post.likesCount }}</span>
                         </button>
-                        <span class="post-time">{{ formatDate(post.createAt) }}</span>
+                        <button class="action-btn" @click="toggleComments(post.id)">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                        </button>
+                        <button class="action-btn save-btn saved">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                        </button>
+                    </div>
+
+                    <!-- Inline Comments -->
+                    <div v-if="expandedPosts.has(post.id)" class="comments-section">
+                        <div class="comment-input-row">
+                            <div class="comment-avatar">{{ profile?.name?.charAt(0).toUpperCase() || 'U' }}</div>
+                            <input v-model="commentText[post.id]" @keyup.enter="sendComment(post.id)" type="text" placeholder="Оставьте комментарий..." class="comment-input" />
+                            <button @click="sendComment(post.id)" :disabled="!commentText[post.id]?.trim() || sendingComment[post.id]" class="comment-submit">
+                                {{ sendingComment[post.id] ? '...' : 'Отправить' }}
+                            </button>
+                        </div>
+                        <div v-if="post.comments?.length" class="comments-list">
+                            <div v-for="comment in post.comments" :key="comment.id" class="comment-item">
+                                <div class="comment-avatar small">{{ comment.author?.name?.charAt(0).toUpperCase() || 'U' }}</div>
+                                <div class="comment-content">
+                                    <div class="comment-header-small">
+                                        <span class="comment-author-name">@{{ comment.author?.name || 'user' }}</span>
+                                        <span class="comment-time">{{ formatTime(comment.createAt) }}</span>
+                                    </div>
+                                    <p class="comment-text-small">{{ comment.text }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="no-comments">
+                            <p>Комментариев пока нет</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -494,29 +533,32 @@ onMounted(() => {
 .unsave-btn { position: absolute; top: 12px; right: 12px; background: #111; border: 1px solid #333; color: #ffc107; cursor: pointer; padding: 6px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 10; }
 .unsave-btn:hover { border-color: #ffc107; background: rgba(255,193,7,0.1); }
 
-.post-actions { display: flex; align-items: center; gap: 16px; margin-top: 8px; }
-.post-action { font-size: 14px; color: #fff; display: flex; align-items: center; gap: 4px; background: transparent; border: none; padding: 0; cursor: default; }
-.comment-btn { cursor: pointer; transition: transform 0.2s; }
-.comment-btn:hover { transform: scale(1.1); }
-
-.delete-btn { position: absolute; top: 12px; right: 12px; background: #111; border: 1px solid #333; color: #666; cursor: pointer; padding: 6px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 10; }
-.delete-btn:hover { color: #ff4444; border-color: #ff4444; background: rgba(255,68,68,0.1); }
-
 /* Comments Section (Inline) */
 .comments-section { margin-top: 16px; padding-top: 12px; border-top: 1px solid #262626; }
-.comment-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.comment-input { flex: 1; height: 36px; background: #111; border: 1px solid #333; border-radius: 18px; padding: 0 16px; color: #fff; font-size: 14px; }
-.comment-input:focus { outline: none; border-color: #555; }
-.comment-submit { background: transparent; border: none; color: #fff; font-size: 18px; cursor: pointer; padding: 0 8px; }
+.comment-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid #222; padding-bottom: 12px; }
+.comment-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #333, #555); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #888; flex-shrink: 0; }
+.comment-avatar.small { width: 28px; height: 28px; font-size: 11px; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; border: 1px solid #333; }
+.comment-input { flex: 1; height: 40px; background: transparent; border: none; outline: none; color: #fff; font-size: 14px; }
+.comment-input::placeholder { color: #555; }
+.comment-submit { padding: 8px 16px; background: transparent; border: 1px solid #333; border-radius: 20px; color: #fff; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+.comment-submit:hover:not(:disabled) { background: #fff; color: #000; }
 .comment-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .comments-list { display: flex; flex-direction: column; gap: 12px; }
 .comment-item { display: flex; gap: 10px; }
-.comment-avatar-small { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; border: 1px solid #333; }
-.comment-header-small { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
-.comment-author-name { font-size: 13px; font-weight: 600; color: #fff; }
-.comment-text-small { font-size: 13px; color: #ccc; margin: 0; line-height: 1.4; }
+.comment-avatar-small { display: none; } /* Replaced by .comment-avatar.small */
 
-.no-comments { text-align: center; padding: 12px 0; }
-.no-comments p { font-size: 13px; color: #555; margin: 0; }
+.comment-header-small { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.comment-author-name { font-size: 14px; font-weight: 600; color: #fff; }
+.comment-time { font-size: 13px; color: #555; }
+.comment-text-small { font-size: 14px; color: #ccc; line-height: 1.4; margin: 0; }
+
+.no-comments { padding: 20px 0; text-align: center; }
+.no-comments p { font-size: 14px; color: #555; margin: 0; }
+
+.post-actions { display: flex; align-items: center; gap: 16px; }
+.action-btn { display: flex; align-items: center; gap: 6px; padding: 8px 0; background: transparent; border: none; color: #f5f5f5; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+.action-btn:hover { opacity: 0.7; }
+.action-btn svg { width: 24px; height: 24px; }
+.save-btn { margin-left: auto; }
 </style>
