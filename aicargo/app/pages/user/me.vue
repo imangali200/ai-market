@@ -266,8 +266,8 @@ onMounted(() => {
         </div>
 
         <div class="profile-actions">
-            <button class="action-btn logout" @click="logout">Выйти</button>
-            <a :href="'tel:' + profile.phoneNumber" class="action-btn phone">📞 {{ profile.phoneNumber }}</a>
+            <button class="profile-btn logout" @click="logout">Выйти</button>
+            <a :href="'tel:' + profile.phoneNumber" class="profile-btn phone">{{ profile.phoneNumber }}</a>
         </div>
 
         <div class="profile-tabs">
@@ -499,11 +499,16 @@ onMounted(() => {
 .stat { font-size: 15px; color: #fff; }
 
 .profile-actions { display: flex; gap: 12px; margin-bottom: 24px; }
-.action-btn { flex: 1; padding: 12px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; transition: all 0.2s; }
-.action-btn.logout { background: transparent; border: 1px solid #333; color: #fff; }
-.action-btn.logout:hover { background: #222; }
-.action-btn.phone { background: #222; border: none; color: #fff; }
-.action-btn.phone:hover { background: #333; }
+.profile-btn { flex: 1; padding: 12px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; transition: all 0.2s; background: #111; border: 1px solid #222; color: #fff; }
+.profile-btn.logout:hover { background: #222; }
+.profile-btn.phone { background: #111; color: #fff; }
+.profile-btn.phone:hover { background: #222; }
+
+/* Post Buttons */
+.post-actions { display: flex; align-items: center; gap: 16px; margin-top: 12px; }
+.action-btn { display: flex; align-items: center; gap: 6px; padding: 8px 0; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+.action-btn:hover { opacity: 0.7; }
+.action-btn svg { width: 24px; height: 24px; }
 
 .profile-tabs { display: flex; border-bottom: 1px solid #222; margin-bottom: 20px; }
 .profile-tabs button { flex: 1; padding: 14px 0; background: transparent; border: none; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; position: relative; transition: color 0.2s; }

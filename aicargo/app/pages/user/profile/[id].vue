@@ -316,8 +316,8 @@ watch(userId, (newId) => {
 .no-comments { padding: 20px 0; text-align: center; }
 .no-comments p { font-size: 14px; color: #555; margin: 0; }
 
-.post-actions { display: flex; align-items: center; gap: 16px; }
-.action-btn { display: flex; align-items: center; gap: 6px; padding: 8px 0; background: transparent; border: none; color: #f5f5f5; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+.post-actions { display: flex; align-items: center; gap: 16px; margin-top: 12px; }
+.action-btn { display: flex; align-items: center; gap: 6px; padding: 8px 0; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 14px; transition: all 0.2s; }
 .action-btn:hover { opacity: 0.7; }
 .action-btn svg { width: 24px; height: 24px; }
 </style>
