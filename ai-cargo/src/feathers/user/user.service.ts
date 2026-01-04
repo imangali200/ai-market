@@ -17,7 +17,7 @@ export class UserService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
   async findPhonenumber(phoneNumber: string) {
     try {
       const user = await this.userRepository.findOne({
@@ -228,9 +228,9 @@ export class UserService {
       const profile = await this.userRepository.findOne({
         where: { id },
         relations: [
-          'posts', 
-          'posts.author', 
-          'posts.comments', 
+          'posts',
+          'posts.author',
+          'posts.comments',
           'posts.comments.author'
         ],
         select: {
@@ -248,7 +248,7 @@ export class UserService {
               id: true,
               name: true,
               surname: true,
-      
+
             },
             comments: {
               id: true,
@@ -258,7 +258,7 @@ export class UserService {
                 id: true,
                 name: true,
                 surname: true,
-          
+
               }
             }
           }
@@ -271,22 +271,32 @@ export class UserService {
     }
   }
 
+  async searchUserById(id: number) {
+  const user = await this.userRepository.findOne({ where: { id } })
+   
+  if (!user) {
+    throw new NotFoundException('User not found')
+  }
+
+  return user
+}
+
   async myProfile(id: number) {
     try {
       const profile = await this.userRepository.findOne({
         where: { id },
         relations: [
-          'postLikes', 
+          'postLikes',
           'postLikes.author',
-          'postLikes.comments', 
+          'postLikes.comments',
           'postLikes.comments.author',
-          'saved', 
+          'saved',
           'saved.author',
-          'saved.comments', 
+          'saved.comments',
           'saved.comments.author',
-          'posts', 
+          'posts',
           'posts.author',
-          'posts.comments', 
+          'posts.comments',
           'posts.comments.author'
         ],
         select: {

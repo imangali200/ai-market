@@ -1,7 +1,9 @@
 <template>
     <div class="auth-page">
         <button @click="$router.back()" class="back-btn">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5m7-7-7 7 7 7" />
+            </svg>
         </button>
 
         <div class="auth-content">
@@ -11,13 +13,8 @@
             </div>
 
             <form @submit.prevent="postRegister" class="auth-form">
-                <input 
-                    v-model="phoneNumber" 
-                    ref="phoneInput" 
-                    type="text" 
-                    placeholder="Номер телефона"
-                    class="auth-input"
-                />
+                <input v-model="phoneNumber" ref="phoneInput" type="text" placeholder="Номер телефона"
+                    class="auth-input" />
 
                 <select v-model="selectBranch" class="auth-input auth-select">
                     <option value="">Выберите склад</option>
@@ -27,35 +24,15 @@
                 </select>
 
                 <div class="input-row">
-                    <input 
-                        v-model="codeUser" 
-                        type="text" 
-                        placeholder="Код (Ai-000)"
-                        class="auth-input"
-                        @input="ensureAiPrefix"
-                    />
-                    <input 
-                        v-model="name" 
-                        type="text" 
-                        placeholder="Имя"
-                        class="auth-input"
-                    />
+                    <input v-model="codeUser" type="text" placeholder="Код (Ai-000)" class="auth-input"
+                        @input="ensureAiPrefix" />
+                    <input v-model="name" type="text" placeholder="Имя" class="auth-input" />
                 </div>
 
-                <input 
-                    v-model="surname" 
-                    type="text" 
-                    placeholder="Фамилия"
-                    class="auth-input"
-                />
+                <input v-model="surname" type="text" placeholder="Фамилия" class="auth-input" />
 
-                <input 
-                    v-model="password" 
-                    type="password" 
-                    placeholder="Пароль"
-                    class="auth-input"
-                    :class="{ error: errorMessage }"
-                />
+                <input v-model="password" type="password" placeholder="Пароль" class="auth-input"
+                    :class="{ error: errorMessage }" />
 
                 <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
 
@@ -82,7 +59,7 @@ definePageMeta({
     layout: "auth",
 });
 
-interface Branch {
+export interface Branch {
     branchName: string;
     id: number;
 }
@@ -160,43 +137,189 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.auth-page { min-height: 100vh; background: #000; display: flex; flex-direction: column; padding: 16px; }
+.auth-page {
+    min-height: 100vh;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+}
 
-.back-btn { position: absolute; top: 16px; left: 16px; width: 44px; height: 44px; background: transparent; border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-.back-btn:hover { background: #111; }
+.back-btn {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
 
-.auth-content { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 400px; margin: 0 auto; width: 100%; padding: 40px 0; }
+.back-btn:hover {
+    background: #111;
+}
 
-.auth-header { text-align: center; margin-bottom: 32px; }
-.auth-title { font-size: 32px; font-weight: 700; color: #fff; margin: 0 0 16px; }
-.auth-subtitle { font-size: 16px; color: #666; line-height: 1.5; margin: 0; }
+.auth-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 400px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 40px 0;
+}
 
-.auth-form { display: flex; flex-direction: column; gap: 12px; }
+.auth-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
 
-.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.auth-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 16px;
+}
 
-.auth-input { width: 100%; height: 52px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 0 16px; font-size: 16px; color: #fff; outline: none; transition: all 0.2s; box-sizing: border-box; }
-.auth-input::placeholder { color: #666; }
-.auth-input:focus { border-color: #fff; background: #111; }
-.auth-input.error { border-color: #ef4444; }
+.auth-subtitle {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+}
 
-.auth-select { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
-.auth-select option { background: #1a1a1a; color: #fff; }
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
 
-.error-text { font-size: 14px; color: #ef4444; margin: 4px 0 0; text-align: center; }
+.input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
 
-.auth-submit { height: 52px; background: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; color: #000; cursor: pointer; margin-top: 8px; transition: all 0.2s; }
-.auth-submit:hover { background: #e5e5e5; }
-.auth-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.auth-input {
+    width: 100%;
+    height: 52px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 0 16px;
+    font-size: 16px;
+    color: #fff;
+    outline: none;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
 
-.auth-divider { display: flex; align-items: center; gap: 16px; margin: 24px 0; }
-.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: #333; }
-.auth-divider span { font-size: 14px; color: #666; }
+.auth-input::placeholder {
+    color: #666;
+}
 
-.login-btn { display: block; height: 52px; background: transparent; border: 1px solid #333; border-radius: 12px; font-size: 16px; font-weight: 600; color: #fff; text-decoration: none; line-height: 50px; text-align: center; transition: all 0.2s; }
-.login-btn:hover { background: #111; border-color: #444; }
+.auth-input:focus {
+    border-color: #fff;
+    background: #111;
+}
+
+.auth-input.error {
+    border-color: #ef4444;
+}
+
+.auth-select {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+}
+
+.auth-select option {
+    background: #1a1a1a;
+    color: #fff;
+}
+
+.error-text {
+    font-size: 14px;
+    color: #ef4444;
+    margin: 4px 0 0;
+    text-align: center;
+}
+
+.auth-submit {
+    height: 52px;
+    background: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #000;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+}
+
+.auth-submit:hover {
+    background: #e5e5e5;
+}
+
+.auth-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #333;
+}
+
+.auth-divider span {
+    font-size: 14px;
+    color: #666;
+}
+
+.login-btn {
+    display: block;
+    height: 52px;
+    background: transparent;
+    border: 1px solid #333;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+    line-height: 50px;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.login-btn:hover {
+    background: #111;
+    border-color: #444;
+}
 
 @media (max-width: 480px) {
-    .input-row { grid-template-columns: 1fr; }
+    .input-row {
+        grid-template-columns: 1fr;
+    }
 }
 </style>

@@ -19,21 +19,28 @@ import { RegisterDto } from '../auth/dto/register.dto';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
 
-  @ApiOperation({summary:"get admins for the branches"})
+  @ApiOperation({ summary: "get admins for the branches" })
   @Auth([UserRoles.SUPERADMIN])
   @Get('admins')
-  async getAdmins(){
+  async getAdmins() {
     return await this.userService.getAdmins()
   }
 
   @ApiOperation({ summary: 'search with (name,phonenumber,surname,role)' })
-  @Get(':search')
+  @Get('search')
   @Auth([UserRoles.ADMIN, UserRoles.SUPERADMIN])
   async searchUsers(@Query('search') search: string) {
     return await this.userService.searchUsers(search);
+  }
+
+  @ApiOperation({ summary: 'search with id)' })
+  @Get('id/:id')
+  @Auth([UserRoles.ADMIN, UserRoles.SUPERADMIN])
+  async searchUsersById(@Param('id') id: number) {
+    return await this.userService.searchUserById(id);
   }
 
   @ApiOperation({ summary: 'update user' })
@@ -43,10 +50,10 @@ export class UserController {
     return await this.userService.updateUser(id, updateData);
   }
 
-  @ApiOperation({summary:'switch the active'})
+  @ApiOperation({ summary: 'switch the active' })
   @Put('active/:id')
   @Auth([UserRoles.SUPERADMIN])
-  async switchActive(@Param('id') id:number){
+  async switchActive(@Param('id') id: number) {
     return await this.userService.switchActive(id)
   }
 

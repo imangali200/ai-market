@@ -45,7 +45,7 @@ async function getBranches() {
 async function getUserById() {
     loading.value = true
     try {
-        const userData = await $axios.get(`user/${id}`, {
+        const userData = await $axios.get(`user/id/${id}`, {
             headers: { 'Authorization': `Bearer ${token.value}` }
         })
 
