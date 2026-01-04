@@ -183,9 +183,9 @@ watch(userId, (newId) => {
 .post-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .post-author { font-size: 15px; font-weight: 600; color: #fff; }
 .post-time { font-size: 14px; color: #aaa; }
-.post-text { font-size: 15px; color: #fff; line-height: 1.4; margin: 0 0 8px; }
-.post-link { display: inline-block; font-size: 14px; color: #1d9bf0; text-decoration: none; margin-bottom: 12px; }
-.post-link:hover { text-decoration: underline; }
+.post-text { font-size: 15px; color: #fff; line-height: 1.4; margin: 0 0 12px; }
+.post-link { display: inline-block; font-size: 14px; color: #7dd3fc; text-decoration: none; margin-bottom: 12px; font-weight: 500; }
+.post-link:hover { text-decoration: underline; color: #fff; }
 .post-image-wrapper { margin: 8px 0 12px; height: 280px; background: #111; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px; border: 1px solid #222; }
 .post-image { width: 100%; height: 100%; object-fit: cover; }
 
