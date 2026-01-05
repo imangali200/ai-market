@@ -17,7 +17,7 @@ export class ProductsService {
 
     @InjectRepository(ImportedTrackEntity)
     private readonly importedTrackRepository: Repository<ImportedTrackEntity>,
-  ) {}
+  ) { }
 
   async createProduct(productDto: ProductDto, userId: number) {
     try {
@@ -33,12 +33,17 @@ export class ProductsService {
       product.productId = productDto.productId;
       product.productName = productDto.productName;
       product.user = user;
-      
+
       // Copy dates from imported track if exists
       if (importedTrack) {
         // Link this track to the user who claimed it
         importedTrack.user = user;
         await this.importedTrackRepository.save(importedTrack);
+
+        // Copy dates from imported track to the new product
+        product.china_warehouse = importedTrack.china_warehouse;
+        product.aicargo = importedTrack.aicargo;
+        product.given_to_client = importedTrack.given_to_client;
       }
 
       const saveProduct = await this.productRepository.save(product);
@@ -111,7 +116,7 @@ export class ProductsService {
     try {
       const product = await this.productRepository
         .createQueryBuilder('product')
-        .where('product.productId LIKE :id',{id:`%${id}%`})
+        .where('product.productId LIKE :id', { id: `%${id}%` })
         .getMany()
       if (!product) throw new NotFoundException('product is not found');
       return product;
