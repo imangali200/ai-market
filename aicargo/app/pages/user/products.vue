@@ -205,6 +205,13 @@ function goToLogin() {
     router.push('/auth/login')
 }
 
+function getStatusClass(product: Product) {
+    if (activeTab.value === 'archive') return 'archived'
+    if (product.aicargo) return 'status-aicargo'
+    if (product.china_warehouse) return 'status-china'
+    return 'status-registered'
+}
+
 const refreshToken = useCookie('refreshToken')
 
 function logout() {
@@ -300,7 +307,7 @@ onMounted(async () => {
 
         <div v-else class="products-list">
             <div v-for="product in products" :key="product.id" class="product-card">
-                <div class="card-header" :class="{ archived: activeTab === 'archive' }">
+                <div class="card-header" :class="getStatusClass(product)">
                     <div class="card-header-info">
                         <span class="card-label">Трек-код</span>
                         <h2 class="card-code">{{ product.productId.toUpperCase() }}</h2>
@@ -324,7 +331,7 @@ onMounted(async () => {
                         </button>
                     </div>
                 </div>
-                <div class="card-progress" :class="{ archived: activeTab === 'archive' }">
+                <div class="card-progress" :class="getStatusClass(product)">
                     <div class="progress-bar">
                         <div class="progress-fill" :style="{ width: (getProgress(product) / 3 * 100) + '%' }"></div>
                     </div>
@@ -796,6 +803,21 @@ onMounted(async () => {
     height: 100%;
     background: #fff;
     border-radius: 3px;
+}
+
+.card-header.status-registered,
+.card-progress.status-registered {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.card-header.status-china,
+.card-progress.status-china {
+    background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+}
+
+.card-header.status-aicargo,
+.card-progress.status-aicargo {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
 }
 
 .card-desc {
