@@ -73,12 +73,31 @@ export class ProductsService {
 
   async getOwnProducts(userid: number) {
     try {
-      const user = await this.userRepository.findOne({
-        where: { id: userid },
-        relations: ['products'],
+      const products = await this.productRepository
+        .createQueryBuilder('product')
+        .leftJoinAndSelect('product.user', 'user')
+        // Join imported_tracks by productId string matching
+        .leftJoinAndMapOne(
+          'product.importedTrack',
+          ImportedTrackEntity,
+          'track',
+          'track.productId = product.productId'
+        )
+        .where('user.id = :userid', { userid })
+        .getMany();
+
+      // Merge data: if admin has status, show it
+      return products.map((product) => {
+        const track = (product as any).importedTrack;
+        if (track) {
+          product.china_warehouse = track.china_warehouse || product.china_warehouse;
+          product.aicargo = track.aicargo || product.aicargo;
+          product.given_to_client = track.given_to_client || product.given_to_client;
+        }
+        // Remove the temporary property before returning if desired, or keep it
+        delete (product as any).importedTrack;
+        return product;
       });
-      if (!user) throw new NotFoundException('Not found user');
-      return user.products;
     } catch (error) {
       throw error;
     }
