@@ -20,7 +20,7 @@ export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly userService: UserService,
-  ) {}
+  ) { }
 
   @ApiOperation({ summary: 'create user by admin' })
   @Post('/createuser')
@@ -28,11 +28,11 @@ export class AdminController {
   async createUser(@Body() createUser: CreateUser) {
     return await this.userService.createByAdmin(createUser);
   }
-  
-  @ApiOperation({summary:'import file showed in china branch'})
+
+  @ApiOperation({ summary: 'import file showed in china branch' })
   @Post('tracks/uploads')
   @UseInterceptors(FileInterceptor('file'))
-  @Auth([UserRoles.ADMIN,UserRoles.SUPERADMIN])
+  @Auth([UserRoles.ADMIN, UserRoles.SUPERADMIN])
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -51,10 +51,10 @@ export class AdminController {
   }
 
 
-  @ApiOperation({summary:'import file showed in aicargo'})
+  @ApiOperation({ summary: 'import file showed in aicargo' })
   @Post('tracks/uploads-taraz')
   @UseInterceptors(FileInterceptor('file'))
-  @Auth([UserRoles.ADMIN,UserRoles.SUPERADMIN])
+  @Auth([UserRoles.ADMIN, UserRoles.SUPERADMIN])
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -74,8 +74,8 @@ export class AdminController {
 
 
   @Post('tracks')
-  @Auth([UserRoles.ADMIN,UserRoles.SUPERADMIN])
-  @ApiOperation({summary:"in the branch"})
+  @Auth([UserRoles.ADMIN, UserRoles.SUPERADMIN])
+  @ApiOperation({ summary: "in the branch" })
   @ApiBody({
     schema: {
       type: 'object',
@@ -89,8 +89,8 @@ export class AdminController {
   }
 
   @Post('tracks/complete-tracks')
-  @Auth([UserRoles.ADMIN,UserRoles.SUPERADMIN])
-  @ApiOperation({summary:"Complete track"})
+  @Auth([UserRoles.ADMIN, UserRoles.SUPERADMIN])
+  @ApiOperation({ summary: "Complete track" })
   @ApiBody({
     schema: {
       type: 'object',
@@ -128,5 +128,12 @@ export class AdminController {
   @Auth([UserRoles.ADMIN, UserRoles.SUPERADMIN])
   async searchImportedTracks(@Query('productId') productId: string) {
     return await this.adminService.searchImportedTrack(productId);
+  }
+
+  @Post('sync-tracks')
+  @Auth([UserRoles.SUPERADMIN])
+  @ApiOperation({ summary: 'Sync missing statuses for existing products' })
+  async syncTracks() {
+    return await this.adminService.syncAllTracks();
   }
 }

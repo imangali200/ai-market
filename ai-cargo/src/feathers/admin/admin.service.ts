@@ -16,7 +16,7 @@ export class AdminService {
     private readonly productRepository: Repository<ProductEntity>,
     @InjectRepository(ImportedTrackEntity)
     private readonly importedTrackRepository: Repository<ImportedTrackEntity>,
-  ) {}
+  ) { }
   async updateExcelFile(file: Express.Multer.File, time: string) {
     try {
       if (!time) throw new BadRequestException("You haven't time");
@@ -40,7 +40,7 @@ export class AdminService {
         let importedTrack = await this.importedTrackRepository.findOne({
           where: { productId },
         });
-        
+
         if (importedTrack) {
           importedTrack.china_warehouse = new Date(time);
           await this.importedTrackRepository.save(importedTrack);
@@ -91,7 +91,7 @@ export class AdminService {
         let importedTrack = await this.importedTrackRepository.findOne({
           where: { productId },
         });
-        
+
         if (importedTrack) {
           importedTrack.aicargo = new Date(time);
           await this.importedTrackRepository.save(importedTrack);
@@ -119,7 +119,7 @@ export class AdminService {
     }
   }
 
-  
+
 
 
   async inAiCargo(productId: string) {
@@ -128,7 +128,7 @@ export class AdminService {
       let importedTrack = await this.importedTrackRepository.findOne({
         where: { productId },
       });
-      
+
       if (importedTrack) {
         importedTrack.aicargo = new Date();
         await this.importedTrackRepository.save(importedTrack);
@@ -161,7 +161,7 @@ export class AdminService {
       let importedTrack = await this.importedTrackRepository.findOne({
         where: { productId },
       });
-      
+
       if (importedTrack) {
         importedTrack.given_to_client = new Date();
         await this.importedTrackRepository.save(importedTrack);
@@ -215,5 +215,42 @@ export class AdminService {
   }
 
   // Sync existing products with imported tracks (link users)
+  async syncAllTracks() {
+    try {
+      const importedTracks = await this.importedTrackRepository.find();
+      let updatedCount = 0;
 
+      for (const track of importedTracks) {
+        // Find products with this code
+        const products = await this.productRepository.find({
+          where: { productId: track.productId },
+        });
+
+        for (const product of products) {
+          let needsUpdate = false;
+
+          if (track.china_warehouse && !product.china_warehouse) {
+            product.china_warehouse = track.china_warehouse;
+            needsUpdate = true;
+          }
+          if (track.aicargo && !product.aicargo) {
+            product.aicargo = track.aicargo;
+            needsUpdate = true;
+          }
+          if (track.given_to_client && !product.given_to_client) {
+            product.given_to_client = track.given_to_client;
+            needsUpdate = true;
+          }
+
+          if (needsUpdate) {
+            await this.productRepository.save(product);
+            updatedCount++;
+          }
+        }
+      }
+      return { message: `Synced ${updatedCount} products` };
+    } catch (error) {
+      throw error;
+    }
+  }
 }
