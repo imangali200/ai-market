@@ -150,6 +150,22 @@ const disactive = async (id: number) => {
     }
 }
 
+const syncLoading = ref(false)
+const syncData = async () => {
+    if (!confirm('Барлық ескі тауарларды базамен синхрондауды қалайсыз ба?')) return
+    syncLoading.value = true
+    try {
+        const res = await $axios.post('/admin/sync-tracks', {}, {
+            headers: { 'Authorization': `Bearer ${token.value}` }
+        })
+        toast.success(res.data.message || 'Синхронизация сәтті аяқталды!', { position: 'top-center' })
+    } catch {
+        toast.error('Қате орын алды', { position: 'top-center' })
+    } finally {
+        syncLoading.value = false
+    }
+}
+
 const formatData = (time: string) => {
     if (!time) return ''
     return new Date(time).toLocaleString('ru-RU', {
@@ -392,7 +408,7 @@ onMounted(() => {
             </div>
 
             <p v-if="totalPages > 1" class="tw-text-center tw-text-white/40 tw-text-sm tw-mt-3">Страница {{ currentPage
-            }} из {{
+                }} из {{
                     totalPages }}</p>
         </div>
     </div>
