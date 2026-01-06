@@ -567,7 +567,6 @@ onMounted(async () => {
 
 .products-page {
     padding: 16px 0;
-    padding-top: calc(16px + env(safe-area-inset-top, 0px));
 }
 
 .page-header {
