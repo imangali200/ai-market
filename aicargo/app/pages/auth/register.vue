@@ -100,9 +100,18 @@ async function postRegister() {
     isLoading.value = true;
     errorMessage.value = "";
 
+    // Remove all non-digit characters to get the clean number
+    const cleanPhone = phoneNumber.value.replace(/\D/g, "");
+
+    if (cleanPhone.length !== 11) {
+        errorMessage.value = "Введите полный номер телефона (11 цифр)";
+        isLoading.value = false;
+        return;
+    }
+
     try {
         const response = await $axios.post("auth/register", {
-            phoneNumber: phoneNumber.value.replace(/\s+/g, ""),
+            phoneNumber: cleanPhone,
             code: codeUser.value,
             name: name.value,
             surname: surname.value,
@@ -129,7 +138,13 @@ const phoneInput = ref<HTMLInputElement | null>(null);
 onMounted(() => {
     if (phoneInput.value) {
         IMask(phoneInput.value, {
-            mask: "8000 000 00 00",
+            mask: "8 (000) 000-00-00",
+            lazy: false,
+            prepare: (str) => {
+                // If user types '7' or '+7' at the start, replace or shift it to follow '8'
+                if (str === "7" || str === "+7") return "";
+                return str;
+            }
         });
     }
     getBranches();

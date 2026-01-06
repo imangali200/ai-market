@@ -1,7 +1,9 @@
 <template>
     <div class="auth-page">
         <button @click="$router.push('/user')" class="back-btn">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5m7-7-7 7 7 7" />
+            </svg>
         </button>
 
         <div class="auth-content">
@@ -12,24 +14,13 @@
 
             <form @submit.prevent="postLogin" class="auth-form">
                 <div class="input-group">
-                    <input 
-                        v-model="phoneValue" 
-                        ref="phoneInput" 
-                        type="text" 
-                        placeholder="Номер телефона"
-                        class="auth-input"
-                        :class="{ error: errorPhoneNumber }"
-                    />
+                    <input v-model="phoneValue" ref="phoneInput" type="text" placeholder="Номер телефона"
+                        class="auth-input" :class="{ error: errorPhoneNumber }" />
                 </div>
 
                 <div class="input-group">
-                    <input 
-                        v-model="passwordValue" 
-                        :type="showPassword ? 'text' : 'password'" 
-                        placeholder="Пароль"
-                        class="auth-input"
-                        :class="{ error: errorMessage && !errorPhoneNumber }"
-                    />
+                    <input v-model="passwordValue" :type="showPassword ? 'text' : 'password'" placeholder="Пароль"
+                        class="auth-input" :class="{ error: errorMessage && !errorPhoneNumber }" />
                 </div>
 
                 <p v-if="errorMessage || errorPhoneNumber" class="error-text">{{ errorPhoneNumber || errorMessage }}</p>
@@ -80,14 +71,23 @@ async function postLogin() {
         errorMessage.value = "Заполните все поля";
         return;
     }
-    
+
     isLoading.value = true;
     errorMessage.value = "";
     errorPhoneNumber.value = "";
-    
+
+    // Remove all non-digit characters to get the clean number
+    const cleanPhone = phoneValue.value.replace(/\D/g, "");
+
+    if (cleanPhone.length !== 11) {
+        errorPhoneNumber.value = "Введите полный номер телефона (11 цифр)";
+        isLoading.value = false;
+        return;
+    }
+
     try {
         const res = await $axios.post("auth/login", {
-            phoneNumber: phoneValue.value.replace(/\s+/g, ""),
+            phoneNumber: cleanPhone,
             password: passwordValue.value,
         });
 
@@ -114,43 +114,180 @@ async function postLogin() {
 onMounted(() => {
     if (phoneInput.value) {
         IMask(phoneInput.value, {
-            mask: "8000 000 00 00",
+            mask: "8 (000) 000-00-00",
+            lazy: false,
+            prepare: (str) => {
+                // If user types '7' or '+7' at the start, replace or shift it to follow '8'
+                if (str === "7" || str === "+7") return "";
+                return str;
+            }
         });
     }
 });
 </script>
 
 <style scoped>
-.auth-page { min-height: 100vh; background: #000; display: flex; flex-direction: column; padding: 16px; }
+.auth-page {
+    min-height: 100vh;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+}
 
-.back-btn { position: absolute; top: 16px; left: 16px; width: 44px; height: 44px; background: transparent; border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-.back-btn:hover { background: #111; }
+.back-btn {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
 
-.auth-content { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 400px; margin: 0 auto; width: 100%; padding: 40px 0; }
+.back-btn:hover {
+    background: #111;
+}
 
-.auth-header { text-align: center; margin-bottom: 40px; }
-.auth-title { font-size: 32px; font-weight: 700; color: #fff; margin: 0 0 16px; }
-.auth-subtitle { font-size: 16px; color: #666; line-height: 1.5; margin: 0; }
+.auth-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 400px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 40px 0;
+}
 
-.auth-form { display: flex; flex-direction: column; gap: 12px; }
+.auth-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
 
-.input-group { position: relative; }
+.auth-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 16px;
+}
 
-.auth-input { width: 100%; height: 56px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 0 16px; font-size: 16px; color: #fff; outline: none; transition: all 0.2s; box-sizing: border-box; }
-.auth-input::placeholder { color: #666; }
-.auth-input:focus { border-color: #fff; background: #111; }
-.auth-input.error { border-color: #ef4444; }
+.auth-subtitle {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+}
 
-.error-text { font-size: 14px; color: #ef4444; margin: 4px 0 0; text-align: center; }
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
 
-.auth-submit { height: 56px; background: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; color: #000; cursor: pointer; margin-top: 8px; transition: all 0.2s; }
-.auth-submit:hover { background: #e5e5e5; }
-.auth-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.input-group {
+    position: relative;
+}
 
-.auth-divider { display: flex; align-items: center; gap: 16px; margin: 24px 0; }
-.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: #333; }
-.auth-divider span { font-size: 14px; color: #666; }
+.auth-input {
+    width: 100%;
+    height: 56px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 0 16px;
+    font-size: 16px;
+    color: #fff;
+    outline: none;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
 
-.register-btn { display: block; height: 56px; background: transparent; border: 1px solid #333; border-radius: 12px; font-size: 16px; font-weight: 600; color: #fff; text-decoration: none; line-height: 54px; text-align: center; transition: all 0.2s; }
-.register-btn:hover { background: #111; border-color: #444; }
+.auth-input::placeholder {
+    color: #666;
+}
+
+.auth-input:focus {
+    border-color: #fff;
+    background: #111;
+}
+
+.auth-input.error {
+    border-color: #ef4444;
+}
+
+.error-text {
+    font-size: 14px;
+    color: #ef4444;
+    margin: 4px 0 0;
+    text-align: center;
+}
+
+.auth-submit {
+    height: 56px;
+    background: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #000;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+}
+
+.auth-submit:hover {
+    background: #e5e5e5;
+}
+
+.auth-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #333;
+}
+
+.auth-divider span {
+    font-size: 14px;
+    color: #666;
+}
+
+.register-btn {
+    display: block;
+    height: 56px;
+    background: transparent;
+    border: 1px solid #333;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+    line-height: 54px;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.register-btn:hover {
+    background: #111;
+    border-color: #444;
+}
 </style>

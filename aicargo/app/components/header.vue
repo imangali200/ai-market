@@ -72,7 +72,6 @@ function goToSearch() {
     max-width: 620px;
     margin: 0 auto;
     padding: 14px 16px;
-    padding-top: calc(14px + env(safe-area-inset-top, 0px));
     display: flex;
     align-items: center;
     justify-content: space-between;
