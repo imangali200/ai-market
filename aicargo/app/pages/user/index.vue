@@ -53,6 +53,9 @@ const isLoggedIn = computed(() => !!token.value)
 const posts = ref<Post[]>([])
 const loading = ref(false)
 const allPostsSeen = ref(false)
+const offset = ref(0)
+const limit = 20
+const hasMore = ref(true)
 
 const expandedComments = ref<Set<number>>(new Set())
 const commentText = ref<{ [key: number]: string }>({})
@@ -80,41 +83,55 @@ function markPostsAsSeen(postIds: number[]) {
 }
 
 // Сбросить просмотренные посты
-function resetSeenPosts() {
+async function resetSeenPosts() {
     if (typeof window === 'undefined') return
     localStorage.removeItem('seenPosts')
     allPostsSeen.value = false
+    offset.value = 0
+    hasMore.value = true
     getPosts()
 }
 
-async function getPosts() {
+async function getPosts(isLoadMore = false) {
+    if (loading.value) return
     loading.value = true
+
     try {
-        const response = await $axios.get('post')
-        const allPosts: Post[] = Array.isArray(response.data) ? response.data : [response.data]
+        const response = await $axios.get('post', {
+            params: {
+                limit: limit,
+                offset: offset.value
+            }
+        })
 
-        // Уақыт бойынша сұрыптау - ең соңғылары бірінші
-        allPosts.sort((a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime())
+        const newBatch: Post[] = Array.isArray(response.data) ? response.data : [response.data]
 
-        // Получить ID просмотренных постов
-        const seenIds = getSeenPostIds()
-
-        // Фильтровать - показать только новые посты
-        const newPosts = allPosts.filter(post => !seenIds.has(post.id))
-
-        if (newPosts.length === 0 && allPosts.length > 0) {
-            // Все посты просмотрены
-            allPostsSeen.value = true
-            posts.value = []
-        } else {
-            posts.value = newPosts
-            // Отметить показанные посты как просмотренные
-            markPostsAsSeen(newPosts.map(p => p.id))
+        if (newBatch.length < limit) {
+            hasMore.value = false
         }
-    } catch {
-        posts.value = []
+
+        if (isLoadMore) {
+            posts.value = [...posts.value, ...newBatch]
+        } else {
+            posts.value = newBatch
+        }
+
+        offset.value += newBatch.length
+
+        // Mark posts as seen for original logic (if still needed)
+        markPostsAsSeen(newBatch.map(p => p.id))
+
+    } catch (error) {
+        console.error('Fetch error:', error)
+        if (!isLoadMore) posts.value = []
     } finally {
         loading.value = false
+    }
+}
+
+async function loadMore() {
+    if (hasMore.value && !loading.value) {
+        await getPosts(true)
     }
 }
 
@@ -379,6 +396,12 @@ onMounted(() => {
                     </div>
                 </div>
             </div>
+
+            <div v-if="hasMore" class="load-more-container">
+                <button @click="loadMore" class="load-more-btn" :disabled="loading">
+                    {{ loading ? 'Загрузка...' : 'Показать еще' }}
+                </button>
+            </div>
         </div>
     </div>
 
@@ -599,11 +622,6 @@ onMounted(() => {
 
 .action-btn:hover {
     opacity: 0.7;
-}
-
-.action-btn svg {
-    width: 24px;
-    height: 24px;
 }
 
 .action-btn.liked svg {
@@ -831,11 +849,39 @@ onMounted(() => {
 
 .modal-btn.secondary {
     background: transparent;
-    color: #fff;
     border: 1px solid #333;
+    color: #fff;
 }
 
 .modal-btn.secondary:hover {
     background: #111;
+}
+
+.load-more-container {
+    padding: 24px 16px;
+    display: flex;
+    justify-content: center;
+}
+
+.load-more-btn {
+    padding: 12px 32px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 24px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.load-more-btn:hover:not(:disabled) {
+    background: #222;
+    border-color: #444;
+}
+
+.load-more-btn:disabled {
+    opacity: 0.5;
+    cursor: wait;
 }
 </style>

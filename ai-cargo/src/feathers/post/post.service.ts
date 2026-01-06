@@ -42,38 +42,38 @@ export class PostService {
     });
   }
 
-  async createPost(postDto: PostDto,photo:Express.Multer.File, id: number) {
+  async createPost(postDto: PostDto, photo: Express.Multer.File, id: number) {
     try {
       const user = await this.userService.findId(id);
       if (!user) throw new NotFoundException('User is not found');
 
 
 
-      if(!photo){
+      if (!photo) {
         throw new BadRequestException("photo is required")
       }
       let imgUrl: string | undefined;
-    if (photo) {
-      imgUrl = await new Promise((resolve, reject) => {
-        const uploadStream = this.cloudinary.uploader.upload_stream(
-          { folder: 'posts' },
-          (error, result) => {
-            if (error) {
-              console.error('Cloudinary upload error details:', JSON.stringify(error, null, 2));
-              reject(error);
-            } else if (result) {
-              resolve(result.secure_url);
+      if (photo) {
+        imgUrl = await new Promise((resolve, reject) => {
+          const uploadStream = this.cloudinary.uploader.upload_stream(
+            { folder: 'posts' },
+            (error, result) => {
+              if (error) {
+                console.error('Cloudinary upload error details:', JSON.stringify(error, null, 2));
+                reject(error);
+              } else if (result) {
+                resolve(result.secure_url);
+              }
             }
-          }
-        );
-        streamifier.createReadStream(photo.buffer).pipe(uploadStream);
-      });
-    }
+          );
+          streamifier.createReadStream(photo.buffer).pipe(uploadStream);
+        });
+      }
 
       const post = await this.postRepository.create({
         ...postDto,
         author: user,
-        imgUrl:imgUrl
+        imgUrl: imgUrl
       });
       await this.postRepository.save(post);
       return { message: 'post is created successfully' };
@@ -105,7 +105,7 @@ export class PostService {
     }
   }
 
-  async getAllPost() {
+  async getAllPost(limit: number = 20, offset: number = 0) {
     try {
       const posts = await this.postRepository.find({
         relations: ['author', 'comments', 'comments.author'],
@@ -120,6 +120,11 @@ export class PostService {
             },
           },
         },
+        order: {
+          createAt: 'DESC'
+        },
+        take: limit,
+        skip: offset,
       });
       if (!posts) throw new NotFoundException('Post is not found');
       return posts;
@@ -202,22 +207,22 @@ export class PostService {
   }
 
 
-  async deleteOwnPost(userId:number,id:number){
+  async deleteOwnPost(userId: number, id: number) {
     try {
       const post = await this.postRepository.findOne({
-        where:{id},
-        relations:['author']
+        where: { id },
+        relations: ['author']
       })
 
-      if(!post){
+      if (!post) {
         throw new NotFoundException("Post is not found")
       }
 
-      if(post.author.id !== userId){
+      if (post.author.id !== userId) {
         throw new ForbiddenException("You can delete only your own post")
       }
       await this.postRepository.delete(id)
-      return {message:"deleted successfully"}
+      return { message: "deleted successfully" }
     } catch (error) {
       throw error
     }
