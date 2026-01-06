@@ -365,14 +365,15 @@ onMounted(async () => {
                     <div class="modal-header">
                         <button @click="showAddModal = false" class="modal-cancel">Отмена</button>
                         <h3>Новый трек</h3>
-                        <button @click="addTrack"
-                            :disabled="addLoading || !newTrackCode.trim() || !newDescription.trim()"
-                            class="modal-submit">{{ addLoading ? '...' : 'Добавить' }}</button>
+                        <div class="header-spacer"></div>
                     </div>
                     <div class="modal-body">
                         <input v-model="newTrackCode" type="text" placeholder="Трек-код" class="modal-input" />
                         <textarea v-model="newDescription" placeholder="Описание товара..." rows="4"
                             class="modal-textarea"></textarea>
+                        <button @click="addTrack"
+                            :disabled="addLoading || !newTrackCode.trim() || !newDescription.trim()"
+                            class="modal-submit-body">{{ addLoading ? '...' : 'Добавить' }}</button>
                     </div>
                 </div>
             </div>
@@ -916,6 +917,14 @@ onMounted(async () => {
     font-weight: 700;
     color: #fff;
     margin: 0;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.header-spacer {
+    width: 60px;
+    /* To balance the Отмена button width */
 }
 
 .modal-cancel {
@@ -927,18 +936,20 @@ onMounted(async () => {
     padding: 8px;
 }
 
-.modal-submit {
-    padding: 8px 16px;
+.modal-submit-body {
+    width: 100%;
+    padding: 16px;
     background: #fff;
     border: none;
-    border-radius: 20px;
+    border-radius: 12px;
     color: #000;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
+    margin-top: 10px;
 }
 
-.modal-submit:disabled {
+.modal-submit-body:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
