@@ -567,6 +567,7 @@ onMounted(async () => {
 
 .products-page {
     padding: 16px 0;
+    padding-top: calc(16px + env(safe-area-inset-top, 0px));
 }
 
 .page-header {
@@ -907,7 +908,7 @@ onMounted(async () => {
     align-items: center;
     justify-content: space-between;
     padding: 16px;
-    margin-top: 20px;
+    padding-top: calc(16px + env(safe-area-inset-top, 0px));
     border-bottom: 1px solid #222;
 }
 
