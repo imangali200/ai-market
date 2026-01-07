@@ -5,7 +5,9 @@
 </template>
 
 <style>
-html, body, #__nuxt {
+html,
+body,
+#__nuxt {
   background: #0a0a0a !important;
   min-height: 100vh;
   min-height: 100dvh;
@@ -27,5 +29,17 @@ html, body, #__nuxt {
     padding-right: env(safe-area-inset-right);
     /* Bottom padding handled by BottomNav component */
   }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 </style>
