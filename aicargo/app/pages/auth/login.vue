@@ -117,8 +117,7 @@ onMounted(() => {
             mask: "8 (000) 000-00-00",
             lazy: false,
             prepare: (str) => {
-                // If user types '7' or '+7' at the start, replace or shift it to follow '8'
-                if (str === "7" || str === "+7") return "";
+                if (str === "+") return "";
                 return str;
             }
         });
