@@ -14,8 +14,8 @@
 
             <form @submit.prevent="postLogin" class="auth-form">
                 <div class="input-group">
-                    <input v-model="phoneValue" ref="phoneInput" type="text" placeholder="Номер телефона"
-                        class="auth-input" :class="{ error: errorPhoneNumber }" maxlength="17" />
+                    <input ref="phoneInput" type="text" placeholder="Номер телефона" class="auth-input"
+                        :class="{ error: errorPhoneNumber }" />
                 </div>
 
                 <div class="input-group">

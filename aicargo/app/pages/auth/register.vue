@@ -13,8 +13,7 @@
             </div>
 
             <form @submit.prevent="postRegister" class="auth-form">
-                <input v-model="phoneNumber" ref="phoneInput" type="text" placeholder="Номер телефона"
-                    class="auth-input" maxlength="17" />
+                <input ref="phoneInput" type="text" placeholder="Номер телефона" class="auth-input" />
 
                 <select v-model="selectBranch" class="auth-input auth-select">
                     <option value="">Выберите склад</option>
