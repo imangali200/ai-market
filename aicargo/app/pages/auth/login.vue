@@ -15,7 +15,7 @@
             <form @submit.prevent="postLogin" class="auth-form">
                 <div class="input-group">
                     <input v-model="phoneValue" ref="phoneInput" type="text" placeholder="Номер телефона"
-                        class="auth-input" :class="{ error: errorPhoneNumber }" />
+                        class="auth-input" :class="{ error: errorPhoneNumber }" maxlength="17" />
                 </div>
 
                 <div class="input-group">
@@ -113,13 +113,17 @@ async function postLogin() {
 
 onMounted(() => {
     if (phoneInput.value) {
-        IMask(phoneInput.value, {
+        const mask = IMask(phoneInput.value, {
             mask: "8 (000) 000-00-00",
             lazy: false,
             prepare: (str) => {
                 if (str === "+") return "";
                 return str;
             }
+        });
+
+        mask.on("accept", () => {
+            phoneValue.value = mask.value;
         });
     }
 });
