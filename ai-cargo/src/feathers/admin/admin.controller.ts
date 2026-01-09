@@ -4,6 +4,7 @@ import {
   Get,
   Post,
   Query,
+  Req,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -106,14 +107,14 @@ export class AdminController {
   @ApiOperation({ summary: 'get all the users' })
   @Get()
   @Auth([UserRoles.ADMIN, UserRoles.SUPERADMIN])
-  async getUsers() {
-    return await this.userService.findUsers();
+  async getUsers(@Req() req: any) {
+    return await this.userService.findUsers(req.user.role);
   }
   @ApiOperation({ summary: 'get users from archive' })
   @Get('archive')
   @Auth([UserRoles.ADMIN, UserRoles.SUPERADMIN])
-  async archiveUsers() {
-    return await this.userService.getArchiveUsers();
+  async archiveUsers(@Req() req: any) {
+    return await this.userService.getArchiveUsers(req.user.role);
   }
 
   @ApiOperation({ summary: 'Get all imported tracks' })

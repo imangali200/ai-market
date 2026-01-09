@@ -16,7 +16,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly configService: ConfigService,
     private readonly tokenService: TokenService,
-  ) {}
+  ) { }
 
   async register(registerDto: RegisterDto) {
     try {
@@ -38,7 +38,7 @@ export class AuthService {
   }
   async login(loginDto: LoginDto) {
     try {
-      const user = await this.userService.findPhonenumber(loginDto.phoneNumber);
+      const user = await this.userService.findPhonenumber(loginDto.phoneNumber, true);
       if (!user) throw new NotFoundException('not found phone number');
       const isValid = user.password === loginDto.password;
 

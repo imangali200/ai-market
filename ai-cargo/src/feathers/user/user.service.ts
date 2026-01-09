@@ -18,12 +18,16 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     private readonly configService: ConfigService,
   ) { }
-  async findPhonenumber(phoneNumber: string) {
+  async findPhonenumber(phoneNumber: string, withPassword = false) {
     try {
-      const user = await this.userRepository.findOne({
-        where: { phoneNumber },
-      });
-      return user;
+      const query = this.userRepository.createQueryBuilder('user')
+        .where('user.phoneNumber = :phoneNumber', { phoneNumber });
+
+      if (withPassword) {
+        query.addSelect('user.password');
+      }
+
+      return await query.getOne();
     } catch (error) {
       throw error;
     }
@@ -60,9 +64,15 @@ export class UserService {
     }
   }
 
-  async findUsers() {
+  async findUsers(role?: string) {
     try {
-      const users = await this.userRepository.find();
+      const query = this.userRepository.createQueryBuilder('user');
+
+      if (role === 'superAdmin') {
+        query.addSelect('user.password');
+      }
+
+      const users = await query.getMany();
       if (!users) throw new NotFoundException('No have users');
       return users;
     } catch (error) {
@@ -137,13 +147,18 @@ export class UserService {
     }
   }
 
-  async getArchiveUsers() {
+  async getArchiveUsers(role?: string) {
     try {
-      const users = await this.userRepository
+      const query = this.userRepository
         .createQueryBuilder('user')
         .withDeleted()
-        .where('user.deletedAt IS NOT NULL')
-        .getMany();
+        .where('user.deletedAt IS NOT NULL');
+
+      if (role === 'superAdmin') {
+        query.addSelect('user.password');
+      }
+
+      const users = await query.getMany();
       if (!users.length) {
         throw new NotFoundException('There are no users in the archive');
       }
