@@ -3,19 +3,19 @@ import { UserEntity } from "./user.entity";
 import { PostEntity } from "./post.entity";
 
 @Entity('comments')
-export class CommentsEntity{
+export class CommentsEntity {
     @PrimaryGeneratedColumn()
-    id:number
+    id: number
 
     @Column()
-    text:string
+    text: string
 
-    @ManyToOne(()=>UserEntity,(user)=>user.comments)
-    author:UserEntity
+    @ManyToOne(() => UserEntity, (user) => user.comments)
+    author: UserEntity
 
-    @ManyToOne(()=>PostEntity,(post)=>post.comments)
-    post:PostEntity
+    @ManyToOne(() => PostEntity, (post) => post.comments, { onDelete: 'CASCADE' })
+    post: PostEntity
 
-    @CreateDateColumn({type:"timestamp"})
-    createAt:Date
+    @CreateDateColumn({ type: "timestamp" })
+    createAt: Date
 }

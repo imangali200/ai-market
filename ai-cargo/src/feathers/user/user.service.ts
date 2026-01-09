@@ -272,14 +272,14 @@ export class UserService {
   }
 
   async searchUserById(id: number) {
-  const user = await this.userRepository.findOne({ where: { id } })
-   
-  if (!user) {
-    throw new NotFoundException('User not found')
-  }
+    const user = await this.userRepository.findOne({ where: { id } })
 
-  return user
-}
+    if (!user) {
+      throw new NotFoundException('User not found')
+    }
+
+    return user
+  }
 
   async myProfile(id: number) {
     try {
@@ -309,15 +309,27 @@ export class UserService {
           isActive: true,
           posts: {
             id: true, review: true, imgUrl: true, link: true, createAt: true,
-            author: { id: true, name: true, surname: true, code: true }
+            author: { id: true, name: true, surname: true, code: true },
+            comments: {
+              id: true, text: true, createAt: true,
+              author: { id: true, name: true, surname: true }
+            }
           },
           postLikes: {
             id: true, review: true, imgUrl: true, link: true, createAt: true,
-            author: { id: true, name: true, surname: true, code: true }
+            author: { id: true, name: true, surname: true },
+            comments: {
+              id: true, text: true, createAt: true,
+              author: { id: true, name: true, surname: true }
+            }
           },
           saved: {
             id: true, review: true, imgUrl: true, link: true, createAt: true,
-            author: { id: true, name: true, surname: true, code: true }
+            author: { id: true, name: true, surname: true, code: true },
+            comments: {
+              id: true, text: true, createAt: true,
+              author: { id: true, name: true, surname: true }
+            }
           }
         }
       });

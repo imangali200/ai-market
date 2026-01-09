@@ -9,7 +9,7 @@ export class UserEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({unique:true})
+  @Column({ unique: true })
   phoneNumber: string;
 
   @Column()
@@ -18,46 +18,46 @@ export class UserEntity {
   @Column()
   surname: string;
 
-  @Column({unique:true,nullable:true})
+  @Column({ unique: true, nullable: true })
   code: string;
 
-  @Column({default:null})
-  branch:string
+  @Column({ default: null })
+  branch: string
 
-  @Column()
+  @Column({ select: false })
   password?: string;
 
-  @Column({default:false})
-  isActive:boolean
+  @Column({ default: false })
+  isActive: boolean
 
 
-  @Column({type:"enum",enum:UserRoles,default:UserRoles.USER})
-  role:string
+  @Column({ type: "enum", enum: UserRoles, default: UserRoles.USER })
+  role: string
 
-  @OneToMany(()=> ProductEntity , (product)=>product.user,{onDelete:'CASCADE'})
-  products:ProductEntity[]
+  @OneToMany(() => ProductEntity, (product) => product.user, { onDelete: 'CASCADE' })
+  products: ProductEntity[]
 
-  
-  @OneToMany(()=>CommentsEntity,(comment)=>comment.author)
-  comments:CommentsEntity[]
 
-  @OneToMany(()=>PostEntity,(post)=>post.author)
-  posts:PostEntity[]
+  @OneToMany(() => CommentsEntity, (comment) => comment.author)
+  comments: CommentsEntity[]
 
-  @ManyToMany(()=>PostEntity,(post)=>post.likes)
-  postLikes:PostEntity[]
+  @OneToMany(() => PostEntity, (post) => post.author)
+  posts: PostEntity[]
+
+  @ManyToMany(() => PostEntity, (post) => post.likes)
+  postLikes: PostEntity[]
 
   @ManyToMany(() => PostEntity, (post) => post.savedBy)
   saved: PostEntity[];
 
-  @CreateDateColumn({type:'timestamp',default:()=>'CURRENT_TIMESTAMP'})
-  createAt:Date
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createAt: Date
 
   @DeleteDateColumn()
-  deletedAt:Date
+  deletedAt: Date
 
   @BeforeInsert()
-  SwiatchActiveAdmin(){
+  SwiatchActiveAdmin() {
     this.isActive = this.role === UserRoles.ADMIN
   }
 }

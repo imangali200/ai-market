@@ -60,8 +60,10 @@ export class PostService {
             (error, result) => {
               if (error) {
                 console.error('Cloudinary upload error details:', JSON.stringify(error, null, 2));
-                reject(error);
-              } else if (result) {
+                const message = error.message || 'Cloudinary upload failed';
+                reject(new BadRequestException(`Суретті жүктеу сәтсіз аяқталды: ${message}`));
+              }
+              else if (result) {
                 resolve(result.secure_url);
               }
             }
@@ -110,9 +112,21 @@ export class PostService {
       const posts = await this.postRepository.find({
         relations: ['author', 'comments', 'comments.author'],
         select: {
+          id: true,
+          link: true,
+          review: true,
+          imgUrl: true,
+          likesCount: true,
+          createAt: true,
+          author: {
+            id: true,
+            name: true,
+            surname: true,
+          },
           comments: {
             id: true,
             text: true,
+            createAt: true,
             author: {
               id: true,
               name: true,

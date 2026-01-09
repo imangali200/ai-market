@@ -337,11 +337,10 @@ onMounted(() => {
             <div v-else class="posts-list">
                 <div v-for="post in profile.posts" :key="post.id" class="post-card">
                     <button class="delete-btn" @click="deletePost(post.id)" title="Удалить">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
-                            <path d="M3 6h18" />
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            <path
+                                d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z" />
                         </svg>
                     </button>
                     <div class="post-user-info">
@@ -977,6 +976,33 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.post-card {
+    position: relative;
+}
+
+.delete-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #111;
+    border: 1px solid #333;
+    color: #f5f5f5;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.delete-btn:hover {
+    border-color: #ff3040;
+    background: rgba(255, 48, 64, 0.1);
+    color: #ff3040;
 }
 
 .post-image {

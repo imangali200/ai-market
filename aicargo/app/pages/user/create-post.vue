@@ -47,25 +47,81 @@ async function getProfile() {
     }
 }
 
-function handlePhotoSelect(event: Event) {
+async function compressImage(file: File): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.readAsDataURL(file)
+        reader.onload = (event) => {
+            const img = new Image()
+            img.src = event.target?.result as string
+            img.onload = () => {
+                const canvas = document.createElement('canvas')
+                let width = img.width
+                let height = img.height
+
+                const MAX_WIDTH = 1920
+                const MAX_HEIGHT = 1920
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width
+                        width = MAX_WIDTH
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height
+                        height = MAX_HEIGHT
+                    }
+                }
+
+                canvas.width = width
+                canvas.height = height
+                const ctx = canvas.getContext('2d')
+                ctx?.drawImage(img, 0, 0, width, height)
+
+                canvas.toBlob((blob) => {
+                    if (blob) resolve(blob)
+                    else reject(new Error('Canvas conversion failed'))
+                }, 'image/jpeg', 0.8)
+            }
+            img.onerror = (e) => reject(e)
+        }
+        reader.onerror = (e) => reject(e)
+    })
+}
+
+async function handlePhotoSelect(event: Event) {
     const input = event.target as HTMLInputElement
     if (input.files && input.files[0]) {
         const file = input.files[0]
         
-        // Check file type
         if (!file.type.startsWith('image/')) {
-            toast.warning('Выберите изображение', { position: 'top-center' })
+            toast.warning('Суретті таңдаңыз', { position: 'top-center' })
             return
         }
-        
-        // Check file size (max 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            toast.warning('Размер фото не должен превышать 10MB', { position: 'top-center' })
-            return
+
+        try {
+            loading.value = true
+            let finalImage: Blob | File = file
+            
+            // Compress if larger than 1MB
+            if (file.size > 1 * 1024 * 1024) {
+                finalImage = await compressImage(file)
+            }
+            
+            if (finalImage.size > 10 * 1024 * 1024) {
+                toast.warning('Сурет көлемі тым үлкен (10MB-тан аспауы керек)', { position: 'top-center' })
+                return
+            }
+            
+            photo.value = new File([finalImage], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' })
+            photoPreview.value = URL.createObjectURL(finalImage)
+        } catch (error) {
+            console.error('Compression error:', error)
+            toast.error('Суретті өңдеуде қате шықты', { position: 'top-center' })
+        } finally {
+            loading.value = false
         }
-        
-        photo.value = file
-        photoPreview.value = URL.createObjectURL(file)
     }
 }
 
@@ -107,7 +163,8 @@ async function createPost() {
         router.push('/user')
     } catch (error: any) {
         console.error(error)
-        toast.error(error.response?.data?.message || 'Ошибка', { position: 'top-center' })
+        const message = error.response?.data?.message || error.message || 'Ошибка'
+        toast.error(message, { position: 'top-center' })
     } finally {
         submitting.value = false
     }
@@ -177,7 +234,7 @@ onMounted(() => {
         <div class="create-header">
             <button @click="goBack" class="cancel-btn">Отмена</button>
             <button @click="createPost" :disabled="submitting || !link.trim() || !review.trim() || !photo" class="submit-btn">
-                {{ submitting ? '...' : 'Опубликовать' }}
+                {{ submitting ? 'Жүктелуде...' : 'Жариялау' }}
             </button>
         </div>
 
